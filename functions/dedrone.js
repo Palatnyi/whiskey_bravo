@@ -6,14 +6,15 @@ const updateJson = require('../testPositionsUpdate.json')[0];
 
 
 const runApp = async (client) => {
-  const collection = await client.db("dedrone").collection('incomingPositions');
+  const incomingPositionsCollection = await client.db("dedrone").collection('incomingPositions');
+  const detectionsStatesCollection = await client.db("dedrone").collection('detectionsStatesCollection');
 
-  watchIncomingPositionsCollection(collection);
+  watchIncomingPositionsCollection(incomingPositionsCollection, detectionsStatesCollection);
 
   const alertId = _get(startJson, 'data.alertId');
   const alertState = _get(startJson, 'data.alertState');
   const detections = _get(updateJson, 'data.detections', []);
-  const uniqPositions = selectUniqPositions(detections);
+  const uniqPositions = selectUniqPositions(detections, alertState);
   const insertDoc = {
     $set: {
       alertId,
@@ -23,22 +24,22 @@ const runApp = async (client) => {
   };
 
   try {
-    setTimeout( async () => { 
-      await collection.updateOne({ alertId }, insertDoc, { upsert: true });
+    setTimeout(async () => {
+      await incomingPositionsCollection.updateOne({ alertId }, insertDoc, { upsert: true });
       const updateDoc = {
         $set: {
           alertId,
           alertState,
           uniqPositions: {
             ...uniqPositions,
-            'dron': [1,2,3]
+            'dron': [1, 2, 3]
           }
         }
       };
-      await collection.updateOne({ alertId }, updateDoc, { upsert: true });
+      await incomingPositionsCollection.updateOne({ alertId }, updateDoc, { upsert: true });
 
     }, 0)
-  } catch (err) { 
+  } catch (err) {
     console.log(err);
   }
 
@@ -47,7 +48,7 @@ const runApp = async (client) => {
 
 }
 
-const selectUniqPositions = (detections) => {
+const selectUniqPositions = (detections, alertState) => {
   let result = {};
 
   detections.forEach(({ positions = [], detectionType, positionState }) => {
@@ -70,9 +71,14 @@ const selectUniqPositions = (detections) => {
       return {
         ...position,
         latitude: parseFloat(position.latitude.toFixed(4)),
-        longitude: parseFloat(position.longitude.toFixed(4))
+        longitude: parseFloat(position.longitude.toFixed(4)),
+        operation: 'update'
       };
     });
+
+    if (alertState === 'start') {
+      data[0].operation = 'start';
+    }
 
     result[detectionType] = { data, positionState }
   });
@@ -81,12 +87,26 @@ const selectUniqPositions = (detections) => {
 }
 
 
-const watchIncomingPositionsCollection = (collection) => {
-  const changeStream = collection.watch();
-  changeStream.on('change', async (next) => {
-    if (next.operationType === 'delete') return; 
-    console.log("CHANGE STREAM", next);
-    console.log(next);
+const watchIncomingPositionsCollection = (incomingPositionsCollection, detectionsStatesCollection) => {
+  const changeStream = incomingPositionsCollection.watch({ fullDocument: "updateLookup" });
+  changeStream.on('change', async (changes) => {
+    if (changes.operationType === 'delete') return;
+
+
+
+    // if (changes.operationType === 'insert') {
+    //   const { alertId } = changes.fullDocument;
+    //   const result = await detectionsStatesCollection.find({ alertId });
+    //   if (!result) { 
+    //     await detectionsStatesCollection.find({ alertId });
+    //   }
+
+    // }
+
+
+
+    console.log("CHANGE STREAM", changes);
+
   });
 }
 

@@ -7,23 +7,90 @@ let positionIndex = 0;
 const chatId = '-1001678724997';
 const botToken = '5401170277:AAGXh_DUBGLqJCJAEVVnHDR9LY2KFrbPXng';
 const bot = new TelegramBot(botToken);
+// const positions = [
+//   {
+//     latitude: 51.3102056,
+//     longitude: 9.5363371
+//   }, {
+//     "longitude": 9.5363381,
+//     "latitude": 51.310305,
+//   }, {
+//     "longitude": 9.5363128,
+//     "latitude": 51.3103118,
+//   }, {
+//     "longitude": 9.5363103,
+//     "latitude": 51.3103125,
+//   }, {
+//     "longitude": 9.536245,
+//     "latitude": 51.3106335,
+//   }];
+
 const positions = [
   {
-    latitude: 51.3102056,
-    longitude: 9.5363371
-  }, {
-    "longitude": 9.5363381,
-    "latitude": 51.310305,
-  }, {
-    "longitude": 9.5363128,
-    "latitude": 51.3103118,
-  }, {
-    "longitude": 9.5363103,
-    "latitude": 51.3103125,
-  }, {
-    "longitude": 9.536245,
-    "latitude": 51.3106335,
-  }];
+    "latitude": 48.436439,
+    "longitude": 22.6993061,
+    "altitude": 0,
+    "timestamp": {
+      "$numberLong": "1658415676820"
+    }
+  },
+  {
+    "latitude": 48.431439,
+    "longitude": 22.6793061,
+    "altitude": 0,
+    "timestamp": {
+      "$numberLong": "1658415676920"
+    }
+  },
+  {
+    "latitude": 48.436439,
+    "timestamp": {
+      "$numberLong": "1658415677020"
+    },
+    "longitude": 22.6993061,
+    "altitude": 0
+  },
+  {
+    "latitude": 48.436539,
+    "altitude": 0,
+    "longitude": 22.6995061,
+    "timestamp": {
+      "$numberLong": "1658415677120"
+    }
+  },
+  {
+    "timestamp": {
+      "$numberLong": "1658415677221"
+    },
+    "longitude": 22.6993061,
+    "latitude": 48.436439,
+    "altitude": 0
+  },
+  {
+    "timestamp": {
+      "$numberLong": "1658415677321"
+    },
+    "altitude": 0,
+    "longitude": 22.6993061,
+    "latitude": 48.436439
+  },
+  {
+    "altitude": 0,
+    "latitude": 48.436439,
+    "longitude": 22.6993061,
+    "timestamp": {
+      "$numberLong": "1658415677421"
+    }
+  },
+  {
+    "timestamp": {
+      "$numberLong": "1658415677521"
+    },
+    "longitude": 22.6993061,
+    "latitude": 48.436439,
+    "altitude": 0
+  }
+];
 
 function sendLocation() {
   const { latitude, longitude } = positions[positionIndex];
