@@ -1,0 +1,13 @@
+[{
+  "_id": {
+    "$oid": "62d9727e0f42bcda3c996f5b"
+  },
+  "channel": "alert",
+  "data": {
+    "alertId": "62d969c5ff8a76240c4726ee",
+    "version": "3",
+    "detections": [],
+    "alertState": "end"
+  },
+  "version": 3
+}]
