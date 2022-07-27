@@ -1,113 +1,156 @@
 const connect = require('./mongod_connect');
-const { get: _get, uniqWith: _uniqWith, isEqual: _isEqual } = require('lodash');
-
+const TelegramBot = require('node-telegram-bot-api');
+const { get: _get, uniqWith: _uniqWith, isEqual: _isEqual, last: _last, pick: _pick, transform: _transform } = require('lodash');
 const startJson = require('../testPositionsStart.json');
-const updateJson = require('../testPositionsUpdate.json')[0];
+const updateJson = require('../testPositionsUpdate_4.json');
+
+const chat_id = '-1001678724997';
+const botToken = '5401170277:AAGXh_DUBGLqJCJAEVVnHDR9LY2KFrbPXng';
+const bot = new TelegramBot(botToken);
 
 
 const runApp = async (client) => {
-  const incomingPositionsCollection = await client.db("dedrone").collection('incomingPositions');
-  const detectionsStatesCollection = await client.db("dedrone").collection('detectionsStatesCollection');
 
-  watchIncomingPositionsCollection(incomingPositionsCollection, detectionsStatesCollection);
+  const testApp = async (client, messages, index) => {
+    console.log('TEST app', index);
+    const incomingPositionsCollection = await client.db("dedrone").collection('incomingPositions');
 
-  const alertId = _get(startJson, 'data.alertId');
-  const alertState = _get(startJson, 'data.alertState');
-  const detections = _get(updateJson, 'data.detections', []);
-  const uniqPositions = selectUniqPositions(detections, alertState);
-  const insertDoc = {
-    $set: {
-      alertId,
-      alertState,
-      uniqPositions
-    }
-  };
+    const alertId = _get(messages, 'data.alertId');
+    const alertState = _get(messages, 'data.alertState');
+    const detections = _get(messages, 'data.detections', []);
+    detections.forEach(async ({ positions = [], detectionType, positionState, identification }) => {
+      // if (!positions.length) return;
 
-  try {
-    setTimeout(async () => {
-      await incomingPositionsCollection.updateOne({ alertId }, insertDoc, { upsert: true });
-      const updateDoc = {
-        $set: {
-          alertId,
-          alertState,
-          uniqPositions: {
-            ...uniqPositions,
-            'dron': [1, 2, 3]
+      let position = _uniqWith(positions, (arg1, arg2) => {
+        let pos1 = _pick(arg1, ['latitude', 'longitude']);
+        const pos2 = _pick(arg2, ['latitude', 'longitude']);
+        return _isEqual(pos1, pos2);
+      });
+
+
+      position = _last(position);
+      position = _pick(position, ['latitude', 'longitude']);
+
+      console.log(position);
+
+      position = _transform(position, (result, value, key) => {
+        (result[key]) = parseFloat(value.toFixed(5));
+      }, {});
+
+      if (alertState === 'start') {
+        try {
+
+          await bot.sendMessage(chat_id, detectionType);
+
+          const { message_id } = await bot.sendLocation(
+            chat_id,
+            position.latitude,
+            position.longitude,
+            {
+              live_period: 4000,
+            }
+          );
+          console.log('Success:', 'BOT sendLiveLocation.', 'AlertID:', alertId);
+
+          const insertDoc = {
+            $set: { position, positionState, detectionType, alertId, message_id }
+          };
+
+          await incomingPositionsCollection.updateOne({ alertId, alertState, message_id }, insertDoc, { upsert: true });
+          console.log('Success:', 'INSERT document.', 'AlertID:', alertId);
+        } catch (e) {
+          console.log('Error:', 'BOT sendLiveLocation.', 'AlertID:', alertId);
+        }
+
+
+      } else if (alertState === 'update') {
+
+        const doc = await incomingPositionsCollection.findOne({ alertId, detectionType });
+
+        if (!doc) {
+          console.log('No data:', 'document does not exists', 'AlertId:', alertId, 'detectionType:', detectionType);
+          return
+        }
+
+        const { message_id, position: oldPosition } = doc;
+
+        if (_isEqual(oldPosition, position)) {
+          console.log('Same position');
+          return;
+
+        }
+
+        const newDocument = {
+          $set: {
+            ...doc,
+            position
           }
         }
-      };
-      await incomingPositionsCollection.updateOne({ alertId }, updateDoc, { upsert: true });
 
-    }, 0)
-  } catch (err) {
-    console.log(err);
+        try {
+          await incomingPositionsCollection.updateOne({ alertId, detectionType, message_id }, newDocument);
+          console.log('Success:', 'UPDATE document.', 'AlertID:', alertId);
+        } catch (e) {
+          console.log('Error:', 'UPDATE document.', 'AlertID:', alertId,);
+
+        }
+
+        setTimeout(async () => {
+          const { message_id } = doc;
+          try {
+
+            await bot.editMessageLiveLocation(
+              position.latitude,
+              position.longitude,
+              {
+                chat_id,
+                message_id,
+                horizontal_accuracy: 100
+              }
+            );
+            console.log('Success:', 'bot editMessaheLiveLocation', 'AlertID', alertId, position, 'message_id', message_id);
+          } catch (e) {
+            console.log(e);
+            console.log('Error:', 'Bot editMessageLiveLocation', 'AlertID', alertId, position, 'message_id', message_id)
+          }
+        }, 3000);
+      } else if (alertState === 'end') {
+        try {
+          const doc = await incomingPositionsCollection.findOne({ alertId, detectionType });
+
+          if (!doc) {
+            console.log('No data:', 'document does not exists', 'AlertId:', alertId, 'detectionType:', detectionType);
+            return
+          }
+
+          const { message_id } = doc;
+
+          await bot.stopMessageLiveLocation({ chat_id, message_id });
+          await incomingPositionsCollection.deleteMany({ alertId, detectionType, message_id });
+          console.log('Success:', 'DELETE document', 'alertId', alertId, 'detectionType', detectionType);
+
+        } catch (e) {
+          console.log('Error:', 'DELETE document', 'alertId', alertId, 'detectionType', detectionType);
+
+        }
+
+      }
+    });
   }
 
-  console.log(uniqPositions);
 
+  let index = 2700;
+  updateJson[2700].data.alertState = 'start';
 
-}
-
-const selectUniqPositions = (detections, alertState) => {
-  let result = {};
-
-  detections.forEach(({ positions = [], detectionType, positionState }) => {
-    let data = _uniqWith(positions, (arg1, arg2) => {
-
-      const pos1 = {
-        latitude: arg1.latitude.toFixed(4),
-        longitude: arg1.longitude.toFixed(4)
-      };
-      const pos2 = {
-        latitude: arg2.latitude.toFixed(4),
-        longitude: arg2.longitude.toFixed(4)
-      }
-
-      return _isEqual(pos1, pos2);
-    });
-
-
-    data = data.map(position => {
-      return {
-        ...position,
-        latitude: parseFloat(position.latitude.toFixed(4)),
-        longitude: parseFloat(position.longitude.toFixed(4)),
-        operation: 'update'
-      };
-    });
-
-    if (alertState === 'start') {
-      data[0].operation = 'start';
+  const interval = setInterval(() => {
+    testApp(client, updateJson[index], index);
+    index += 1;
+    if (index > updateJson.length - 1) {
+      clearInterval(interval);
     }
-
-    result[detectionType] = { data, positionState }
-  });
-
-  return result;
-}
-
-
-const watchIncomingPositionsCollection = (incomingPositionsCollection, detectionsStatesCollection) => {
-  const changeStream = incomingPositionsCollection.watch({ fullDocument: "updateLookup" });
-  changeStream.on('change', async (changes) => {
-    if (changes.operationType === 'delete') return;
-
-
-
-    // if (changes.operationType === 'insert') {
-    //   const { alertId } = changes.fullDocument;
-    //   const result = await detectionsStatesCollection.find({ alertId });
-    //   if (!result) { 
-    //     await detectionsStatesCollection.find({ alertId });
-    //   }
-
-    // }
-
-
-
-    console.log("CHANGE STREAM", changes);
-
-  });
+  }, 100)
 }
 
 connect(runApp);
+//{"data.alertId": "62d969c5ff8a76240c4726ee", "data.alertState": "update", "data.detections": {$elemMatch: {"detectionType": "dron"}}}
+//{"data.alertState": "start", "data.detections": {$elemMatch: {"detectionType": "drone"}}}

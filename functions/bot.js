@@ -146,9 +146,9 @@ function editLocation(response) {
   // }
 }
 
-sendLocation()
-  .then(function (response) {
-    // const { data: { result } } = response;
-    console.log(response);
-    return editLocation(response);
-  })
+// sendLocation()
+//   .then(function (response) {
+//     // const { data: { result } } = response;
+//     console.log(response);
+//     return editLocation(response);
+//   })

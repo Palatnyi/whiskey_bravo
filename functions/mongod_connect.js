@@ -12,8 +12,8 @@ module.exports = function connect(callback) {
 
     console.log('CONNECTED TO MONGO DB');
     callback && callback(client);
-    const collection = client.db("dedrone").collection("testPositions").updateOne;
-    // const changeStream = collection.watch({ fullDocument: "updateLookup"});
+    // const collection = client.db("dedrone").collection('sdf').deleteMany;
+    // const changeStream = collection.watch({ fullDocument: "updateLookup" });
 
 // 
     // client.close();
