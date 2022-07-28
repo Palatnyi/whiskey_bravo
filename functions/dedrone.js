@@ -9,17 +9,33 @@ const botToken = '5401170277:AAGXh_DUBGLqJCJAEVVnHDR9LY2KFrbPXng';
 const bot = new TelegramBot(botToken);
 
 
+const getWelcomeMessage = (detectionType, identification) => {
+  let message = `Запілінговано оператора дрону 🥸 🏴‍☠`;
+
+  if (detectionType === 'drone') {
+    message = `
+    Запілінговано дрон 🚨🚨🚨
+Модель: ${identification.model || ''}
+
+Надсилаю координати...
+`
+  }
+
+  return message;
+}
+
+
 const runApp = async (client) => {
 
   const testApp = async (client, messages, index) => {
-    console.log('TEST app', index);
+    console.log(index);
     const incomingPositionsCollection = await client.db("dedrone").collection('incomingPositions');
 
     const alertId = _get(messages, 'data.alertId');
     const alertState = _get(messages, 'data.alertState');
     const detections = _get(messages, 'data.detections', []);
+
     detections.forEach(async ({ positions = [], detectionType, positionState, identification }) => {
-      // if (!positions.length) return;
 
       let position = _uniqWith(positions, (arg1, arg2) => {
         let pos1 = _pick(arg1, ['latitude', 'longitude']);
@@ -27,37 +43,38 @@ const runApp = async (client) => {
         return _isEqual(pos1, pos2);
       });
 
-
       position = _last(position);
       position = _pick(position, ['latitude', 'longitude']);
-
-      console.log(position);
 
       position = _transform(position, (result, value, key) => {
         (result[key]) = parseFloat(value.toFixed(5));
       }, {});
 
       if (alertState === 'start') {
+
         try {
+          await bot.sendMessage(chat_id, getWelcomeMessage(detectionType, identification));
 
-          await bot.sendMessage(chat_id, detectionType);
+          setTimeout(async () => {
 
-          const { message_id } = await bot.sendLocation(
-            chat_id,
-            position.latitude,
-            position.longitude,
-            {
-              live_period: 4000,
-            }
-          );
-          console.log('Success:', 'BOT sendLiveLocation.', 'AlertID:', alertId);
+            const { message_id } = await bot.sendLocation(
+              chat_id,
+              position.latitude,
+              position.longitude,
+              {
+                live_period: 4000,
+                protect_content: true
+              }
+            );
+            console.log('Success:', 'BOT sendLiveLocation.', 'AlertID:', alertId);
 
-          const insertDoc = {
-            $set: { position, positionState, detectionType, alertId, message_id }
-          };
+            const insertDoc = {
+              $set: { position, positionState, detectionType, alertId, message_id }
+            };
 
-          await incomingPositionsCollection.updateOne({ alertId, alertState, message_id }, insertDoc, { upsert: true });
-          console.log('Success:', 'INSERT document.', 'AlertID:', alertId);
+            await incomingPositionsCollection.updateOne({ alertId, alertState, message_id }, insertDoc, { upsert: true });
+            console.log('Success:', 'INSERT document.', 'AlertID:', alertId);
+          }, 4000);
         } catch (e) {
           console.log('Error:', 'BOT sendLiveLocation.', 'AlertID:', alertId);
         }
@@ -98,7 +115,6 @@ const runApp = async (client) => {
         setTimeout(async () => {
           const { message_id } = doc;
           try {
-
             await bot.editMessageLiveLocation(
               position.latitude,
               position.longitude,
@@ -113,7 +129,7 @@ const runApp = async (client) => {
             console.log(e);
             console.log('Error:', 'Bot editMessageLiveLocation', 'AlertID', alertId, position, 'message_id', message_id)
           }
-        }, 3000);
+        }, 4000);
       } else if (alertState === 'end') {
         try {
           const doc = await incomingPositionsCollection.findOne({ alertId, detectionType });
