@@ -1,192 +1,248 @@
 const cors = require('cors');
+const cron = require('node-cron');
 const express = require('express');
-const admin = require("firebase-admin");
-const functions = require('firebase-functions');
-const serviceAccount = require('./permissions.json');
-const connect = require('./mongod_connect');
-const { v4: uuidv4 } = require('uuid');
 const TelegramBot = require('node-telegram-bot-api');
-const { get: _get, uniqWith: _uniqWith, isEqual: _isEqual, last: _last, pick: _pick, transform: _transform } = require('lodash');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  apiKey: "AIzaSyB1HMtSp4EbsMXNPutIl3djFKx3fJhbLhI",
-  authDomain: "whiskeybravo-9aa4d.firebaseapp.com",
-  projectId: "whiskeybravo-9aa4d",
-  storageBucket: "whiskeybravo-9aa4d.appspot.com",
-  messagingSenderId: "706482771815",
-  appId: "1:706482771815:web:610b0dad02d958df9881c2"
-});
+const {
+  get: _get,
+  last: _last,
+  pick: _pick,
+  maxBy: _maxBy,
+  isEmpty: _isEmpty,
+  toArray: _toArray,
+  isEqual: _isEqual,
+  uniqWith: _uniqWith,
+  transform: _transform,
+} = require('lodash');
 
+
+let dbCache = {};
+let tasks = {};
+const PORT = 3000;
 const chat_id = '-1001678724997';
 const botToken = '5401170277:AAGXh_DUBGLqJCJAEVVnHDR9LY2KFrbPXng';
 const bot = new TelegramBot(botToken);
-const app = express();
-app.use(cors({ origin: true }));
 
+const connectToMongo = async () => {
+  if (dbCache.client) return dbCache;
 
-const getWelcomeMessage = (detectionType, identification) => {
-  let message = `Запілінговано оператора дрону 🥸 🏴‍☠`;
+  const uri = "mongodb+srv://m001-student:m001-mongodb-basics@sandbox.wiznw.mongodb.net/?retryWrites=true&w=majority";
+  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
-  if (detectionType === 'drone') {
-    message =
-      `Запілінговано дрон 🚨🚨🚨
-Модель: ${identification.model || ''}
-Надсилаю координати...`
+  try {
+    await client.connect();
+    console.log('CONNECTED TO MONGODB');
+  } catch (e) {
+    console.log('FAILED CONNECT TO MONGO', e);
   }
+  dbCache = { client };
 
-  return message;
+  return { client };
 }
 
-const db = admin.firestore();
+const app = express();
+
 app.use(express.json());
-app.post('/dedrone', async (req, res) => {
+app.use(cors({ origin: true }));
 
-  // const docRef = db.collection('users').doc(uuidv4());
-  // console.log(req.body);
-  // await docRef.set(req.body);
-
-  // return;
-  // connect(async (client) => {
-  // const docRef = db.collection('users').doc(uuidv4());
-  // console.log(req.body);
-  // await docRef.set(req.body);
-
-  const data = req.body;
-  const alertId = _get(data, 'data.alertId');
-  const alertState = _get(data, 'data.alertState');
-  const detections = _get(data, 'data.detections', []);
-  // const incomingPositionsCollection = await client.db("dedrone").collection('incomingPositions');
-  const incomingPositionsCollection = db.collection('incomingPositions');
-
-  if (!detections.length) return;
-
-  detections.forEach(async ({ positions = [], detectionType, positionState, identification }) => {
-
-    let position = _uniqWith(positions, (arg1, arg2) => {
-      const pos1 = _pick(arg1, ['latitude', 'longitude']);
-      const pos2 = _pick(arg2, ['latitude', 'longitude']);
-      return _isEqual(pos1, pos2);
-    });
-
-    position = _last(position);
-    position = _pick(position, ['latitude', 'longitude']);
-
-    position = _transform(position, (result, value, key) => {
-      (result[key]) = parseFloat(value.toFixed(4));
-    }, {});
-
-    if (alertState === 'start') {
-
-      try {
-        await bot.sendMessage(chat_id, getWelcomeMessage(detectionType, identification));
-
-        setTimeout(async () => {
-
-          const { message_id } = await bot.sendLocation(
-            chat_id,
-            position.latitude,
-            position.longitude,
-            {
-              live_period: 4000,
-              protect_content: true
-            }
-          );
-          console.log('Success:', 'BOT sendLiveLocation.', 'AlertID:', alertId);
-
-          await incomingPositionsCollection.doc(`${alertId}_${detectionType}`).set({ position, positionState, detectionType, alertId, message_id, alertState });
-          // const insertDoc = {
-          //   $set: { position, positionState, detectionType, alertId, message_id, alertState }
-          // };
-          // await incomingPositionsCollection.updateOne({ alertId, alertState, message_id }, insertDoc, { upsert: true });
-          // client.close();
-
-          console.log('Success:', 'INSERT document.', 'AlertID:', alertId);
-        }, 0);
-      } catch (e) {
-        console.error('Error:', 'BOT sendLiveLocation.', 'AlertID:', alertId);
-      }
-
-
-    } else if (alertState === 'update') {
-
-      // const doc = await incomingPositionsCollection.findOne({ alertId, detectionType });
-      const doc = await incomingPositionsCollection.doc(`${alertId}_${detectionType}`).get();
-      if (!doc.exists) {
-        console.log('No data:', 'document does not exists', 'AlertId:', alertId, 'detectionType:', detectionType);
-        return
-      }
-
-      // const { message_id, position: oldPosition } = doc;
-
-      if (_isEqual(doc.data().position, position)) {
-        console.log('Same position');
-        return;
-      }
-
-      setTimeout(async () => {
-        // const newDocument = {
-        //   $set: {
-        //     ...doc,
-        //     position
-        //   }
-        // }
-        // await incomingPositionsCollection.updateOne({ alertId, detectionType, message_id }, newDocument);
-
-        // client.close();
-
-
-        await incomingPositionsCollection.doc(`${alertId}_${detectionType}`).update({ position });
-
-        const { message_id } = doc.data();
-        try {
-          await bot.editMessageLiveLocation(
-            position.latitude,
-            position.longitude,
-            {
-              chat_id,
-              message_id,
-              horizontal_accuracy: 100
-            }
-          );
-
-          console.log('Success:', 'bot editMessaheLiveLocation', 'AlertID', alertId, position, 'message_id', message_id);
-        } catch (e) {
-          console.error('Error:', 'Bot editMessageLiveLocation', 'AlertID', alertId, position, 'message_id', message_id)
-          console.log(e);
-        }
-      }, 4000);
-    } else if (alertState === 'end') {
-      try {
-        // const doc = await incomingPositionsCollection.findOne({ alertId, detectionType });
-        const doc = await incomingPositionsCollection.doc(`${alertId}_${detectionType}`).get();
-
-
-        if (!doc.exists) {
-          console.log('No data:', 'document does not exists', 'AlertId:', alertId, 'detectionType:', detectionType);
-          return
-        }
-
-        const { message_id } = doc.data();
-
-        await bot.stopMessageLiveLocation({ chat_id, message_id });
-        // await incomingPositionsCollection.deleteMany({ alertId, detectionType, message_id });
-        await incomingPositionsCollection.doc(`${alertId}_${detectionType}`).delete()
-        console.log('Success:', 'DELETE document', 'alertId', alertId, 'detectionType', detectionType);
-
-      } catch (e) {
-        console.error('Error:', 'DELETE document', 'alertId', alertId, 'detectionType', detectionType);
-
-      }
-    }
-  });
-
-  return res.status(200).send({ 'oloo': 123 });
-  // });
-});
-
-app.listen(5001, () => {
-  console.log('app listening on port 5001');
+app.get('/health', (req, res) => () => {
+  res.send({ health: 'ok' });
 })
 
-// exports.app = functions.https.onRequest(app);
+app.post('/dedrone', async (req, res) => {
+  const { client } = await connectToMongo();
+
+  const dedroneDB = await client.db('dedrone');
+  const message = req.body;
+  const alertId = _get(message, 'data.alertId');
+  const alertState = _get(message, 'data.alertState');
+  const detections = _get(message, 'data.detections', []);
+
+  for (const detection of detections) {
+    const { positions: _positions, detectionType, identification } = detection;
+    //remove before production
+    const positions = _positions.map(pos => {
+      pos.timestamp = pos.timestamp.$numberLong || pos.timestamp;
+      return { ...pos }
+    });
+
+    const newPosition = _maxBy(positions, pos => pos.timestamp);
+
+    // let oldPosition = await incomingPositionsCollection.doc(alertId).get();
+    let currentDoc = await dedroneDB.collection('alerts').findOne({ alertId });
+    oldPosition = _get(currentDoc, `${detectionType}.position`, {});
+
+    const isPositionEquals = ({ oldPosition = {}, newPosition = {} }) => {
+      const oldCoordinates = _pick(oldPosition, ['latitude', 'longitude']);
+      const newCoordinates = _pick(newPosition, ['latitude', 'longitude']);
+
+      return _isEqual(oldCoordinates, newCoordinates);
+    }
+
+    if (isPositionEquals({ oldPosition, newPosition })) {
+      console.log('POSITIONS ARE EQUALS');
+      return;
+    }
+
+    const insertOrUpdate = {
+      $set: {
+        alertId,
+        alertState,
+        detectionType,
+        identification,
+        timestamp: Date.now(),
+        [`${detectionType}.position`]: newPosition,
+      },
+    }
+
+    // await dedroneDB.collection('alerts').updateOne({ alertId }, insertOrUpdate, { upsert: true });
+    await dedroneDB.collection('alerts').findOneAndUpdate({ alertId }, insertOrUpdate, { upsert: true });
+
+  };
+
+  if (!tasks[alertId]) {
+    console.log('UPDATE location task started.', 'AlertId:', alertId);
+    tasks[alertId] = cron.schedule("*/5 * * * * *", async () => {  
+      await updateLocationTask(alertId, dedroneDB);
+    });
+  }
+
+  res.status(200).send({ ok: 'ok' });
+
+});
+
+
+const updateLocationTask = async (alertId, dedroneDB) => {
+  console.log('TASK IS RUNNING...', 'AlertID:', alertId);
+  const alert = await dedroneDB.collection('alerts').findOne({ alertId });
+  const { alertState, drone, remote } = alert;
+
+  const isPositionSynced = (device = {}) => {
+    const { syncTimestamp, position: { timestamp } } = device;
+
+    return syncTimestamp === timestamp;
+  }
+
+  const getWelcomeMessage = (detectionType) => {
+    let message = `Запілінговано оператора дрону 🥸 🏴‍☠`;
+
+    if (detectionType === 'drone') {
+      message =
+        `Запілінговано дрон 🚨🚨🚨
+  Надсилаю координати...`
+    }
+
+    return message;
+  }
+
+
+  const updateDeviceLocation = async ({ alertState, alertId, dedroneDB, detectionType, device }) => {
+
+    if (!device || !device.position) return;
+
+    const { position: { timestamp, latitude, longitude } } = device;
+
+    if (device.liveLocationStarted) {
+      try {
+        await bot.editMessageLiveLocation(
+          latitude,
+          longitude,
+          {
+            chat_id,
+            message_id: device.message_id,
+            horizontal_accuracy: 100
+          }
+        );
+        console.log('EDIT', { latitude, longitude });
+      } catch (e) {
+        console.log('EDIT FAILED', { latitude, longitude }, e);
+      }
+
+      const update = {
+        $set: {
+          [`${detectionType}.syncTimestamp`]: timestamp,
+        }
+      };
+      await dedroneDB.collection('alerts').findOneAndUpdate({ alertId }, update);
+
+    } else {
+      let message_id;
+
+      try {
+
+      await bot.sendMessage(chat_id, getWelcomeMessage(detectionType));
+        
+      const response = await bot.sendLocation(
+          chat_id,
+          latitude,
+          longitude, {
+          live_period: 4000,
+          protect_content: true
+        });
+        message_id = response.message_id;
+        console.log('START', { latitude, longitude }, message_id)
+      } catch (e) {
+        console.log('START FAILED', { latitude, longitude }, e);
+      }
+
+      const update = {
+        $set: {
+          alertId,
+          alertState,
+          detectionType,
+          [`${detectionType}.message_id`]: message_id,
+          [`${detectionType}.syncTimestamp`]: timestamp,
+          [`${detectionType}.liveLocationStarted`]: true,
+        }
+      };
+
+      // await dedroneDB.collection('alerts').updateOne({ alertId }, updateDoc);
+      await dedroneDB.collection('alerts').findOneAndUpdate({ alertId }, update);
+
+    }
+  }
+
+
+  if (!isPositionSynced(drone)) {
+    await updateDeviceLocation({ alertState, alertId, detectionType: 'drone', device: drone, dedroneDB });
+  }
+
+  if (!isPositionSynced(remote)) {
+    await updateDeviceLocation({ alertState, alertId, detectionType: 'remote', device: remote, dedroneDB });
+  }
+};
+
+const deleteInactiveAlertsTask = cron.schedule('0 */4 * * *', async () => {
+  console.log('DELETE alert task is running...');
+  const { client } = await connectToMongo();
+  const timestamp = Date.now();
+  const alerts = await client.db('dedrone').collection('alerts').find({}).toArray();
+
+  if (alerts.length < 1) return;
+
+  const alertsToDelete = alerts.filter(alert => (timestamp - alert.timestamp) > 86400000)
+    .map((alert) => {
+      if (tasks[alert.alertId]) {
+        tasks[alert.alertId].stop();
+      }
+      return alert.alertId;
+    });
+
+
+  try {
+    await client.db('dedrone').collection('alerts').deleteMany({ alertId: { $in: alertsToDelete } });
+    console.log('SUCCESS: inactive alerts deleted');
+  } catch (e) {
+    console.log('FAILED: task failed delete inactive alerts');
+
+  }
+  console.log('DELETE alert task finished...');
+
+}, { scheduled: false });
+
+
+app.listen(PORT, async () => {
+  await connectToMongo();
+  deleteInactiveAlertsTask.start();
+});

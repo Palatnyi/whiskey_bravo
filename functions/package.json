@@ -2,12 +2,8 @@
   "name": "functions",
   "description": "Cloud Functions for Firebase",
   "scripts": {
-    "serve": "firebase emulators:start --only functions",
-    "shell": "firebase functions:shell",
-    "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log",
-    "debug": "nodemon --inspect dedrone_2.js"
+    "prod": "npm run index.js",
+    "dev": "nodemon --inspect index.js"
   },
   "engines": {
     "node": "16"
@@ -16,10 +12,8 @@
   "dependencies": {
     "axios": "^0.27.2",
     "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
     "express": "^4.18.1",
-    "firebase": "^9.9.0",
-    "firebase-admin": "^10.0.2",
-    "firebase-functions": "^3.18.0",
     "lodash": "^4.17.21",
     "mongodb": "^4.8.0",
     "node-cron": "^3.0.1",
