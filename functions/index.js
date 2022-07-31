@@ -46,8 +46,8 @@ const app = express();
 app.use(express.json());
 app.use(cors({ origin: true }));
 
-app.get('/health', (req, res) => () => {
-  res.send({ health: 'ok' });
+app.get('/health', (req, res) => {
+  res.send('<b>health: ok </b>');
 })
 
 app.post('/dedrone', async (req, res) => {
