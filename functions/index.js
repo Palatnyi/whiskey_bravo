@@ -50,6 +50,19 @@ app.get('/health', (req, res) => {
   res.send('<b>health: ok </b>');
 })
 
+app.post('/collect-data', async (req, res) => {
+  const { client } = await connectToMongo();
+  const dedroneDB = await client.db('dedrone');
+  try {
+    await dedroneDB.collection('alertsTest').insertOne(req.body);
+    console.log('item saved'.toUpperCase());
+    res.status(200).send({ status: 'ok' });
+  } catch (e) {
+    console.error('item saving failed'.toUpperCase(), e);
+    res.status(500).send({ status: 'failed' });
+  }
+});
+
 app.post('/dedrone', async (req, res) => {
   const { client } = await connectToMongo();
 
@@ -58,18 +71,19 @@ app.post('/dedrone', async (req, res) => {
   const alertId = _get(message, 'data.alertId');
   const alertState = _get(message, 'data.alertState');
   const detections = _get(message, 'data.detections', []);
-  
-  console.log('New alert:',alertId,  req.body.data);
 
-  if (!detections.length) { 
+  console.log('New alert:', alertId, req.body.data);
+
+  if (!detections.length) {
     console.log('detections list is empty'.toUpperCase(), alertId);
     return;
   }
 
   for (const detection of detections) {
     const { positions: _positions, detectionType, identification } = detection;
-    if (!_positions.length) { 
+    if (!_positions.length) {
       console.log('NO POSITIONS in detection object');
+      return;
     }
     //remove before production
     const positions = _positions.map(pos => {
@@ -113,7 +127,7 @@ app.post('/dedrone', async (req, res) => {
 
   if (!tasks[alertId]) {
     console.log('UPDATE location task started.', 'AlertId:', alertId);
-    tasks[alertId] = cron.schedule("*/5 * * * * *", async () => {  
+    tasks[alertId] = cron.schedule("*/5 * * * * *", async () => {
       await updateLocationTask(alertId, dedroneDB);
     });
   }
@@ -181,9 +195,9 @@ const updateLocationTask = async (alertId, dedroneDB) => {
 
       try {
 
-      await bot.sendMessage(chat_id, getWelcomeMessage(detectionType));
-        
-      const response = await bot.sendLocation(
+        await bot.sendMessage(chat_id, getWelcomeMessage(detectionType));
+
+        const response = await bot.sendLocation(
           chat_id,
           latitude,
           longitude, {
