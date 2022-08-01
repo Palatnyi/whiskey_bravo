@@ -59,6 +59,11 @@ app.post('/dedrone', async (req, res) => {
   const alertState = _get(message, 'data.alertState');
   const detections = _get(message, 'data.detections', []);
 
+  if (!detection.length) { 
+    console.log('detections list is empty'.toUpperCase());
+    return;
+  }
+
   for (const detection of detections) {
     const { positions: _positions, detectionType, identification } = detection;
     //remove before production
@@ -156,7 +161,7 @@ const updateLocationTask = async (alertId, dedroneDB) => {
         );
         console.log('EDIT', { latitude, longitude });
       } catch (e) {
-        console.log('EDIT FAILED', { latitude, longitude }, e);
+        console.error('EDIT FAILED', { latitude, longitude }, e);
       }
 
       const update = {
@@ -183,7 +188,7 @@ const updateLocationTask = async (alertId, dedroneDB) => {
         message_id = response.message_id;
         console.log('START', { latitude, longitude }, message_id)
       } catch (e) {
-        console.log('START FAILED', { latitude, longitude }, e);
+        console.error('START LIVE LOCATION FAILED', { latitude, longitude }, e);
       }
 
       const update = {
@@ -237,7 +242,7 @@ const deleteInactiveAlertsTask = cron.schedule('0 */4 * * *', async () => {
     await client.db('dedrone').collection('alerts').deleteMany({ alertId: { $in: alertsToDelete } });
     console.log('SUCCESS: inactive alerts deleted');
   } catch (e) {
-    console.log('FAILED: task failed delete inactive alerts');
+    console.error('FAILED: task failed delete inactive alerts', e);
 
   }
 
