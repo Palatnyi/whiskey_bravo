@@ -1,17 +1,52 @@
-const axios = require('axios');
-const updateJson = require('../testPositionsUpdate_4.json');
+// const axios = require('axios');
+// const updateJson = require('../testPositionsUpdate_4.json');
 
-let index = 2700;
-// updateJson[index].data.alertState = 'start';
-const intervalId = setInterval(() => {
-  if (index === updateJson.length) {
-    clearInterval(intervalId);
-  } else {
-    // axios.post('https://whiskeybravo.online/dedrone', updateJson[index]);
-    axios.post('http://localhost:3000/dedrone', updateJson[index]);
-    console.log(index)
-    
-    index += 1;
+// let index = 2700;
+// // updateJson[index].data.alertState = 'start';
+// const intervalId = setInterval(() => {
+//   if (index === updateJson.length) {
+//     clearInterval(intervalId);
+//   } else {
+//     // axios.post('https://whiskeybravo.online/dedrone', updateJson[index]);
+//     axios.post('http://localhost:3000/dedrone', updateJson[index]);
+//     console.log(index)
 
-  }
-}, 100);
+//     index += 1;
+
+//   }
+// }, 100);
+
+
+const geolib = require('geolib');
+
+console.log(geolib.getDistance({
+  longitude: 22.6965502,
+  latitude: 48.4355967
+}, {
+  "longitude": 22.6929349,
+  "latitude": 48.4339237,
+}));
+
+
+
+const ololo = {
+  "identification.model": { $exists: true, $eq: "Mavic Mini 2" },
+  "identification.detectionType": { $exists: true, $eq: "drone" },
+  "identification.ololo": { $or: [{ $exists: true, $eq: 'ololo' }, { $exists: false }] }
+}
+
+const ololo2 = {
+  $and: [{
+    $or: [{
+      "identification.ololo": { $eq: "ololo" },
+    }, {
+      "identification.ololo": { $type: 9 },
+    }, { "identification.ololo": { $exists: false }, }]
+  }, {
+    $or: [{
+      "identification.detectionType": { $eq: "drone" },
+    }, {
+      "identification.detectionType": { $type: 9 },
+    }, { "identification.detectionType": { $exists: false }, }]
+  }]
+}
