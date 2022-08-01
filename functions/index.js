@@ -59,7 +59,7 @@ app.post('/dedrone', async (req, res) => {
   const alertState = _get(message, 'data.alertState');
   const detections = _get(message, 'data.detections', []);
 
-  if (!detection.length) { 
+  if (!detections.length) { 
     console.log('detections list is empty'.toUpperCase());
     return;
   }
