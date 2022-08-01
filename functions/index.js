@@ -219,7 +219,10 @@ const deleteInactiveAlertsTask = cron.schedule('0 */4 * * *', async () => {
   const timestamp = Date.now();
   const alerts = await client.db('dedrone').collection('alerts').find({}).toArray();
 
-  if (alerts.length < 1) return;
+  if (alerts.length < 1) {
+    console.log('NO ALERTS TO DELETE');
+    return
+  };
 
   const alertsToDelete = alerts.filter(alert => (timestamp - alert.timestamp) > 86400000)
     .map((alert) => {
@@ -237,6 +240,7 @@ const deleteInactiveAlertsTask = cron.schedule('0 */4 * * *', async () => {
     console.log('FAILED: task failed delete inactive alerts');
 
   }
+
   console.log('DELETE alert task finished...');
 
 }, { scheduled: false });
