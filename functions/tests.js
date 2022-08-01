@@ -7,8 +7,8 @@ const intervalId = setInterval(() => {
   if (index === updateJson.length) {
     clearInterval(intervalId);
   } else {
-    axios.post('https://whiskeybravo.online/dedrone', updateJson[index]);
-    // axios.post('http://localhost:5001/dedrone', updateJson[index]);
+    // axios.post('https://whiskeybravo.online/dedrone', updateJson[index]);
+    axios.post('http://localhost:3000/dedrone', updateJson[index]);
     console.log(index)
     
     index += 1;

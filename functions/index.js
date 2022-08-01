@@ -58,14 +58,19 @@ app.post('/dedrone', async (req, res) => {
   const alertId = _get(message, 'data.alertId');
   const alertState = _get(message, 'data.alertState');
   const detections = _get(message, 'data.detections', []);
+  
+  console.log('New alert:',alertId,  req.body.data);
 
   if (!detections.length) { 
-    console.log('detections list is empty'.toUpperCase());
+    console.log('detections list is empty'.toUpperCase(), alertId);
     return;
   }
 
   for (const detection of detections) {
     const { positions: _positions, detectionType, identification } = detection;
+    if (!_positions.length) { 
+      console.log('NO POSITIONS in detection object');
+    }
     //remove before production
     const positions = _positions.map(pos => {
       pos.timestamp = pos.timestamp.$numberLong || pos.timestamp;
