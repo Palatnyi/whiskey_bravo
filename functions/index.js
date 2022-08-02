@@ -14,6 +14,7 @@ const {
   isEqual: _isEqual,
   uniqWith: _uniqWith,
   transform: _transform,
+  uniqueId: _uniqueId,
 } = require('lodash');
 
 
@@ -54,7 +55,7 @@ app.post('/collect-data', async (req, res) => {
   const { client } = await connectToMongo();
   const dedroneDB = await client.db('dedrone');
   try {
-    await dedroneDB.collection('alertsTest').insertOne(req.body);
+    await dedroneDB.collection('alertsTest').insertOne({ ...req.body, timestamp: Date.now() });
     console.log('item saved'.toUpperCase());
     res.status(200).send({ status: 'ok' });
   } catch (e) {
@@ -64,15 +65,15 @@ app.post('/collect-data', async (req, res) => {
 });
 
 app.post('/dedrone', async (req, res) => {
+
   const { client } = await connectToMongo();
 
+  let alertId = _get(req.body, 'data.alertId');
   const dedroneDB = await client.db('dedrone');
-  const message = req.body;
-  const alertId = _get(message, 'data.alertId');
-  const alertState = _get(message, 'data.alertState');
-  const detections = _get(message, 'data.detections', []);
+  const alertState = _get(req.body, 'data.alertState');
+  const detections = _get(req.body, 'data.detections', []);
 
-  console.log('New alert:', alertId, req.body.data);
+  console.log('New alert:', alertId);
 
   if (!detections.length) {
     console.log('detections list is empty'.toUpperCase(), alertId);
@@ -81,6 +82,7 @@ app.post('/dedrone', async (req, res) => {
 
   for (const detection of detections) {
     const { positions: _positions, detectionType, identification } = detection;
+
     if (!_positions.length) {
       console.log('NO POSITIONS in detection object');
       return;
@@ -93,8 +95,7 @@ app.post('/dedrone', async (req, res) => {
 
     const newPosition = _maxBy(positions, pos => pos.timestamp);
 
-    // let oldPosition = await incomingPositionsCollection.doc(alertId).get();
-    let currentDoc = await dedroneDB.collection('alerts').findOne({ alertId });
+    let currentDoc = await dedroneDB.collection('alerts').findOne(getExtendedSearchQuery({ alertId, identification }));
     oldPosition = _get(currentDoc, `${detectionType}.position`, {});
 
     const isPositionEquals = ({ oldPosition = {}, newPosition = {} }) => {
@@ -109,24 +110,29 @@ app.post('/dedrone', async (req, res) => {
       return;
     }
 
+    const timestamp = Date.now();
+    const timestampWindow = timestamp + 30000;
+    alertId = _get(currentDoc, 'alertId', alertId);
+
     const insertOrUpdate = {
       $set: {
         alertId,
+        timestamp,
         alertState,
         detectionType,
         identification,
-        timestamp: Date.now(),
+        timestampWindow,
         [`${detectionType}.position`]: newPosition,
       },
+      $addToSet: { alertIds: { alertId, timestamp} }
     }
 
-    // await dedroneDB.collection('alerts').updateOne({ alertId }, insertOrUpdate, { upsert: true });
     await dedroneDB.collection('alerts').findOneAndUpdate({ alertId }, insertOrUpdate, { upsert: true });
 
   };
 
   if (!tasks[alertId]) {
-    console.log('UPDATE location task started.', 'AlertId:', alertId);
+    console.log('UPDATE location task started.', 'alertId:', alertId);
     tasks[alertId] = cron.schedule("*/5 * * * * *", async () => {
       await updateLocationTask(alertId, dedroneDB);
     });
@@ -137,8 +143,38 @@ app.post('/dedrone', async (req, res) => {
 });
 
 
+const getExtendedSearchQuery = ({ alertId, identification }) => {
+
+  const extendedQuery = Object.keys(identification).map(key => {
+    const value = identification[key];
+
+    return {
+      $or: [{
+        [`identification.${key}`]: { $eq: value }
+      }, {
+        [`identification.${key}`]: { $type: 9 }
+      }, {
+        [`identification.${key}`]: { $exists: false }
+      },]
+    }
+  });
+
+  const and = extendedQuery.concat([
+    { $and: [{ timestampWindow: { $exists: true } }, { timestampWindow: { $gte: Date.now() } }] }
+  ])
+
+  return {
+    $or: [{
+      alertId
+    }, {
+      $and: and
+    }]
+  }
+}
+
+
 const updateLocationTask = async (alertId, dedroneDB) => {
-  console.log('TASK IS RUNNING...', 'AlertID:', alertId);
+  console.log('TASK IS RUNNING...', 'alertId:', alertId);
   const alert = await dedroneDB.collection('alerts').findOne({ alertId });
   const { alertState, drone, remote } = alert;
 
