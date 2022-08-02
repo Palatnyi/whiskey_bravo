@@ -73,8 +73,6 @@ app.post('/dedrone', async (req, res) => {
   const alertState = _get(req.body, 'data.alertState');
   const detections = _get(req.body, 'data.detections', []);
 
-  console.log('New alert:', alertId);
-
   if (!detections.length) {
     console.log('detections list is empty'.toUpperCase(), alertId);
     return;
@@ -82,7 +80,6 @@ app.post('/dedrone', async (req, res) => {
 
   for (const detection of detections) {
     const { positions: _positions, detectionType, identification } = detection;
-
     if (!_positions.length) {
       console.log('NO POSITIONS in detection object');
       return;
@@ -138,6 +135,8 @@ app.post('/dedrone', async (req, res) => {
     });
   }
 
+  console.debug(Object.keys(tasks));
+
   res.status(200).send({ ok: 'ok' });
 
 });
@@ -159,8 +158,22 @@ const getExtendedSearchQuery = ({ alertId, identification }) => {
     }
   });
 
+  // const ololo = (olo) => { 
+  //   console.log('ololo within $where', 5+19/4, olo);
+  // }
+
   const and = extendedQuery.concat([
-    { $and: [{ timestampWindow: { $exists: true } }, { timestampWindow: { $gte: Date.now() } }] }
+    { $and: [{ timestampWindow: { $exists: true } }, { timestampWindow: { $gte: Date.now() } }] },
+  //   {
+  //     $exp: { $function: {
+  //       body: function (position) {
+  //         console.log('$function', position);
+  //         return true
+  //       },
+  //       args: [ "$position" ],
+  //       lang: "js"
+  // } }
+  //   }
   ])
 
   return {

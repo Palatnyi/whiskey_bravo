@@ -1,16 +1,21 @@
 const axios = require('axios');
 const updateJson = require('../testPositionsUpdate_4.json');
+const randomAlerts = require('../randomAlerts.json');
+
 
 let index = 2700;
+let j = 0;
 // updateJson[index].data.alertState = 'start';
 const intervalId = setInterval(() => {
-  if (index === updateJson.length) {
+  if (index === updateJson.length || j === randomAlerts.length) {
     clearInterval(intervalId);
   } else {
     //axios.post('https://whiskeybravo.online/dedrone', updateJson[index]);
-    axios.post('http://localhost:3000/dedrone', updateJson[index]);
-    console.log(index)
+    // axios.post('http://localhost:3000/dedrone', updateJson[index]);
+    axios.post('http://localhost:3000/dedrone', randomAlerts[j]);
 
+    console.log(index)
+    j += 1;
     index += 1;
 
   }
