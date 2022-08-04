@@ -1,21 +1,12 @@
-const cors = require('cors');
-const cron = require('node-cron');
-const express = require('express');
-const TelegramBot = require('node-telegram-bot-api');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+import cors from 'cors';
+import cron from 'node-cron';
+import express from 'express';
+import TelegramBot from 'node-telegram-bot-api';
+import { MongoClient, ServerApiVersion } from 'mongodb';
 
-const {
-  get: _get,
-  last: _last,
-  pick: _pick,
-  maxBy: _maxBy,
-  isEmpty: _isEmpty,
-  toArray: _toArray,
-  isEqual: _isEqual,
-  uniqWith: _uniqWith,
-  transform: _transform,
-  uniqueId: _uniqueId,
-} = require('lodash');
+import _ from 'lodash';
+
+import pulledAlertsTest from '../pulledAlertsTest.json' assert { type: 'json'};
 
 
 let dbCache = {};
@@ -68,13 +59,13 @@ app.post('/dedrone', async (req, res) => {
 
   const { client } = await connectToMongo();
 
-  let alertId = _get(req.body, 'data.alertId');
+  let alertId = _.get(req.body, 'data.alertId');
   const dedroneDB = await client.db('dedrone');
-  const alertState = _get(req.body, 'data.alertState');
-  const detections = _get(req.body, 'data.detections', []);
+  const alertState = _.get(req.body, 'data.alertState');
+  const detections = _.get(req.body, 'data.detections', []);
 
   if (!detections.length) {
-    console.log('detections list is empty'.toUpperCase(), alertId);
+    console.log('detections list is empty'.toUpperCase(), req.body);
     return;
   }
 
@@ -90,16 +81,16 @@ app.post('/dedrone', async (req, res) => {
       return { ...pos }
     });
 
-    const newPosition = _maxBy(positions, pos => pos.timestamp);
+    const newPosition = _.maxBy(positions, pos => pos.timestamp);
 
     let currentDoc = await dedroneDB.collection('alerts').findOne(getExtendedSearchQuery({ alertId, identification }));
-    oldPosition = _get(currentDoc, `${detectionType}.position`, {});
+    oldPosition = _.get(currentDoc, `${detectionType}.position`, {});
 
     const isPositionEquals = ({ oldPosition = {}, newPosition = {} }) => {
-      const oldCoordinates = _pick(oldPosition, ['latitude', 'longitude']);
-      const newCoordinates = _pick(newPosition, ['latitude', 'longitude']);
+      const oldCoordinates = _.pick(oldPosition, ['latitude', 'longitude']);
+      const newCoordinates = _.pick(newPosition, ['latitude', 'longitude']);
 
-      return _isEqual(oldCoordinates, newCoordinates);
+      return _.isEqual(oldCoordinates, newCoordinates);
     }
 
     if (isPositionEquals({ oldPosition, newPosition })) {
@@ -109,7 +100,7 @@ app.post('/dedrone', async (req, res) => {
 
     const timestamp = Date.now();
     const timestampWindow = timestamp + 30000;
-    alertId = _get(currentDoc, 'alertId', alertId);
+    alertId = _.get(currentDoc, 'alertId', alertId);
 
     const insertOrUpdate = {
       $set: {
@@ -140,6 +131,12 @@ app.post('/dedrone', async (req, res) => {
   res.status(200).send({ ok: 'ok' });
 
 });
+
+let i = 0;
+app.get('/test-pull', async (req, res) => { 
+  res.send({ data: { currentAlertState: { alerts: pulledAlertsTest[i].alerts } } });
+  i += 1;
+})
 
 
 const getExtendedSearchQuery = ({ alertId, identification }) => {
@@ -320,6 +317,9 @@ const deleteInactiveAlertsTask = cron.schedule('0 */4 * * *', async () => {
 
 
 app.listen(PORT, async () => {
-  await connectToMongo();
-  deleteInactiveAlertsTask.start();
+  // await connectToMongo();
+  // deleteInactiveAlertsTask.start();
 });
+
+
+// mongoimport --username m103-admin --password m103-pass --db m103 --collection products --host localhost --port 27004 /dataset/products.json
