@@ -17,7 +17,7 @@ const botToken = '5401170277:AAGXh_DUBGLqJCJAEVVnHDR9LY2KFrbPXng';
 const bot = new TelegramBot(botToken);
 
 const connectToMongo = async () => {
-  if (dbCache.client) return dbCache;
+  if (dbCache.client) return Promise.value(dbCache);
 
   const uri = "mongodb+srv://m001-student:m001-mongodb-basics@sandbox.wiznw.mongodb.net/?retryWrites=true&w=majority";
   const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -30,7 +30,7 @@ const connectToMongo = async () => {
   }
   dbCache = { client };
 
-  return { client };
+  return Promise.value({ client });
 }
 
 const app = express();
@@ -53,7 +53,7 @@ app.post('/collect-data', async (req, res) => {
     console.error('item saving failed'.toUpperCase(), e);
     res.status(500).send({ status: 'failed' });
   }
-});
+})
 
 app.post('/dedrone', async (req, res) => {
 
@@ -112,7 +112,7 @@ app.post('/dedrone', async (req, res) => {
         timestampWindow,
         [`${detectionType}.position`]: newPosition,
       },
-      $addToSet: { alertIds: { alertId, timestamp} }
+      $addToSet: { alertIds: { alertId, timestamp } }
     }
 
     await dedroneDB.collection('alerts').findOneAndUpdate({ alertId }, insertOrUpdate, { upsert: true });
@@ -130,10 +130,10 @@ app.post('/dedrone', async (req, res) => {
 
   res.status(200).send({ ok: 'ok' });
 
-});
+})
 
 let i = 0;
-app.get('/test-pull', async (req, res) => { 
+app.get('/test-pull', async (req, res) => {
   res.send({ data: { currentAlertState: { alerts: pulledAlertsTest[i].alerts } } });
   i += 1;
 })
@@ -161,16 +161,16 @@ const getExtendedSearchQuery = ({ alertId, identification }) => {
 
   const and = extendedQuery.concat([
     { $and: [{ timestampWindow: { $exists: true } }, { timestampWindow: { $gte: Date.now() } }] },
-  //   {
-  //     $exp: { $function: {
-  //       body: function (position) {
-  //         console.log('$function', position);
-  //         return true
-  //       },
-  //       args: [ "$position" ],
-  //       lang: "js"
-  // } }
-  //   }
+    //   {
+    //     $exp: { $function: {
+    //       body: function (position) {
+    //         console.log('$function', position);
+    //         return true
+    //       },
+    //       args: [ "$position" ],
+    //       lang: "js"
+    // } }
+    //   }
   ])
 
   return {
@@ -316,10 +316,16 @@ const deleteInactiveAlertsTask = cron.schedule('0 */4 * * *', async () => {
 }, { scheduled: false });
 
 
-app.listen(PORT, async () => {
-  // await connectToMongo();
-  // deleteInactiveAlertsTask.start();
-});
+const enablePush = async () => {
+  app.listen(PORT, async () => {
+    await connectToMongo();
+    deleteInactiveAlertsTask.start();
+  });
+}
+
+export default {
+  enablePush
+}
 
 
-// mongoimport --username m103-admin --password m103-pass --db m103 --collection products --host localhost --port 27004 /dataset/products.json
+

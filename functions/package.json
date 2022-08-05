@@ -2,8 +2,10 @@
   "name": "functions",
   "description": "Cloud Functions for Firebase",
   "scripts": {
-    "prod": "node index.js",
-    "dev": "nodemon --inspect index.js"
+    "push-prod": "node push.js",
+    "pull-prod": "node pull.js",
+    "pull": "nodemon --inspect pull.js",
+    "push": "nodemon --inspect push.js"
   },
   "type": "module",
   "engines": {
@@ -21,6 +23,7 @@
     "mongodb": "^4.8.0",
     "node-cron": "^3.0.1",
     "node-telegram-bot-api": "^0.58.0",
+    "sinon": "^14.0.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

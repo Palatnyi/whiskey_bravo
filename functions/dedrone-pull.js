@@ -4,7 +4,6 @@ import cron from 'node-cron';
 import TelegramBot from 'node-telegram-bot-api';
 import { MongoClient, ServerApiVersion } from 'mongodb';
 
-
 let isPulling;
 const chat_id = '-1001678724997';
 const dedroneToken = 'BedRxVUpuiZytmsqLnjEcxMhcsypWJhJ';
@@ -24,7 +23,7 @@ const setDBCache = (cache) => dbCache = cache;
 const mongoUri = "mongodb+srv://m001-student:m001-mongodb-basics@sandbox.wiznw.mongodb.net/?retryWrites=true&w=majority";
 const connectToMongo = async (uri) => {
   const cache = getDBCache();
-  if (cache && cache.client) return cache;
+  if (cache && cache.client) return Promise.resolve(cache);
 
   const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
@@ -37,7 +36,7 @@ const connectToMongo = async (uri) => {
   }
   setDBCache({ client })
 
-  return { client };
+  return Promise.resolve({ client });
 }
 
 const closeConnection = async () => {
@@ -127,7 +126,7 @@ const requestSystemState = async ({ url, token }) => {
 
 const pullAlerts = async () => {
   if (isPulling) {
-    return;
+    return
   }
 
   console.log('pulling...');
@@ -140,7 +139,7 @@ const pullAlerts = async () => {
   if (systemState.error) {
     console.log(systemState.msg);
     isPulling = false;
-    return
+    return { msg: 'Failed to request dedrone API' }
   }
 
   const alerts = _.get(systemState, 'data.currentAlertState.alerts', [])
@@ -148,7 +147,7 @@ const pullAlerts = async () => {
   if (!alerts.length) {
     console.log('No alerts in systemState response');
     isPulling = false;
-    return
+    return { msg: 'No alerts in systemState response' }
   }
 
   for (const alert of alerts) {
@@ -277,7 +276,7 @@ export default {
   pullUrl,
   dedroneToken,
   closeConnection,
-  getDBCache, 
+  getDBCache,
   setDBCache
 }
 
