@@ -8,6 +8,7 @@ firebase-debug.log*
 firebase-debug.*.log*
 testPositionsUpdate_4.json
 
+
 # Firebase cache
 .firebase/
 

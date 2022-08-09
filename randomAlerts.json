@@ -1,0 +1,1642 @@
+[{
+  "_id": {
+    "$oid": "62e912563456629335ea2337"
+  },
+  "channel": "alert",
+  "version": 3,
+  "data": {
+    "alertId": "62e91182ff8a76240c473146",
+    "alertState": "update",
+    "detections": [
+      {
+        "locationRating": "B",
+        "detectionType": "drone",
+        "level": 100,
+        "positions": [
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748744"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748844"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748944"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749044"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749144"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749244"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749344"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749444"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749544"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749644"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749744"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749844"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749944"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750044"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750144"
+            }
+          }
+        ],
+        "heading": 298.43955434074127,
+        "speed": 0.0027985982783711263,
+        "sensors": [
+          "DRT3602223P5001423",
+          "DRT3602223P5001422",
+          "DRT3602223P5001425",
+          "DRT3602223P5001424",
+          "DRT3602223P5001426"
+        ],
+        "identification": {
+          "detectionType": "drone",
+          "manufacturer": "DJI",
+          "protocol": "OcuSync"
+        },
+        "detectionId": 1499,
+        "positionState": "ALIVE",
+        "uncertainty": 54.96353775548821,
+        "bearings": {
+          "DRT3602223P5001423": 248.99974043371535,
+          "DRT3602223P5001425": 328.29999041324095,
+          "DRT3602223P5001424": 68.80002531930546,
+          "DRT3602223P5001426": 0.5000087753143703
+        }
+      }
+    ],
+    "directions": {
+      "DRT3602223P5001423": [
+        {
+          "direction": 248.99974043371535,
+          "directionError": 6.750015784436243,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001425": [
+        {
+          "direction": 328.29999041324095,
+          "directionError": 6.250006975781446,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001424": [
+        {
+          "direction": 68.80002531930546,
+          "directionError": 7.500017538262455,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001426": [
+        {
+          "direction": 0.5000087753143703,
+          "directionError": 4.250000389052161,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ]
+    },
+    "zones": [],
+    "currentZones": [],
+    "affectedSensors": {
+      "DRT3602223P5001423": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.44209669999998,
+          "longitude": 22.709756900000002,
+          "altitude": 0
+        },
+        "heading": 0
+      },
+      "DRT3602223P5001422": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.43414689999997,
+          "longitude": 22.697269399999982,
+          "altitude": 0
+        },
+        "heading": 337.5
+      },
+      "DRT3602223P5001425": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.40836719999999,
+          "longitude": 22.727010699999937,
+          "altitude": 0
+        },
+        "heading": 337.29999999999995
+      },
+      "DRT3602223P5001424": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.431232499999965,
+          "longitude": 22.687334100000044,
+          "altitude": 0
+        },
+        "heading": 336.29999999999995
+      },
+      "DRT3602223P5001426": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.40717699999999,
+          "longitude": 22.699003199999993,
+          "altitude": 0
+        },
+        "heading": 33.5
+      }
+    },
+    "version": "3"
+  },
+  "timestamp": {
+    "$numberLong": "1659441750156"
+  }
+},{
+  "_id": {
+    "$oid": "62e912563456629335ea2338"
+  },
+  "channel": "alert",
+  "version": 3,
+  "data": {
+    "alertId": "62e91182ff8a76240c473146",
+    "alertState": "update",
+    "detections": [
+      {
+        "locationRating": "B",
+        "detectionType": "drone",
+        "level": 100,
+        "positions": [
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748744"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748844"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748944"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749044"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749144"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749244"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749344"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749444"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749544"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749644"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749744"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749844"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749944"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750044"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750144"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750244"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750345"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750446"
+            }
+          },
+          {
+            "longitude": 22.6988024,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750546"
+            }
+          },
+          {
+            "longitude": 22.6988024,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750646"
+            }
+          }
+        ],
+        "heading": 297.43819609418654,
+        "speed": 0.007280780432727861,
+        "sensors": [
+          "DRT3602223P5001423",
+          "DRT3602223P5001422",
+          "DRT3602223P5001425",
+          "DRT3602223P5001424",
+          "DRT3602223P5001426"
+        ],
+        "identification": {
+          "detectionType": "drone",
+          "manufacturer": "DJI",
+          "protocol": "OcuSync"
+        },
+        "detectionId": 1499,
+        "positionState": "ALIVE",
+        "uncertainty": 49.02579473791583,
+        "bearings": {
+          "DRT3602223P5001423": 255.99985229572619,
+          "DRT3602223P5001425": 328.29999900760777,
+          "DRT3602223P5001424": 68.80002531930546,
+          "DRT3602223P5001426": 0.000017155393493339943
+        }
+      }
+    ],
+    "directions": {
+      "DRT3602223P5001423": [
+        {
+          "direction": 255.99985229572619,
+          "directionError": 3.4999126915566308,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001425": [
+        {
+          "direction": 328.29999900760777,
+          "directionError": 6.499997056163977,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001424": [
+        {
+          "direction": 68.80002531930546,
+          "directionError": 7.500017538262455,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001426": [
+        {
+          "direction": 0.000017155393493339943,
+          "directionError": 4.749992008973038,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ]
+    },
+    "zones": [],
+    "currentZones": [],
+    "affectedSensors": {
+      "DRT3602223P5001423": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.44209669999998,
+          "longitude": 22.709756900000002,
+          "altitude": 0
+        },
+        "heading": 0
+      },
+      "DRT3602223P5001422": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.43414689999997,
+          "longitude": 22.697269399999982,
+          "altitude": 0
+        },
+        "heading": 337.5
+      },
+      "DRT3602223P5001425": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.40836719999999,
+          "longitude": 22.727010699999937,
+          "altitude": 0
+        },
+        "heading": 337.29999999999995
+      },
+      "DRT3602223P5001424": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.431232499999965,
+          "longitude": 22.687334100000044,
+          "altitude": 0
+        },
+        "heading": 336.29999999999995
+      },
+      "DRT3602223P5001426": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.40717699999999,
+          "longitude": 22.699003199999993,
+          "altitude": 0
+        },
+        "heading": 33.5
+      }
+    },
+    "version": "3"
+  },
+  "timestamp": {
+    "$numberLong": "1659441750657"
+  }
+},{
+  "_id": {
+    "$oid": "62e912573456629335ea2339"
+  },
+  "channel": "alert",
+  "version": 3,
+  "data": {
+    "alertId": "62e91182ff8a76240c473146__128",
+    "alertState": "update",
+    "detections": [
+      {
+        "locationRating": "B",
+        "detectionType": "drone",
+        "level": 100,
+        "positions": [
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748744"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748844"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748944"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749044"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749144"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749244"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749344"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749444"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749544"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749644"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749744"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749844"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749944"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750044"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750144"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750244"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750345"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750446"
+            }
+          },
+          {
+            "longitude": 22.6988024,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750546"
+            }
+          },
+          {
+            "longitude": 22.6988024,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750646"
+            }
+          },
+          {
+            "longitude": 22.6988024,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750746"
+            }
+          },
+          {
+            "longitude": 22.6988023,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750846"
+            }
+          },
+          {
+            "longitude": 22.6988023,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750947"
+            }
+          },
+          {
+            "longitude": 22.6988022,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751048"
+            }
+          },
+          {
+            "longitude": 22.6988021,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751149"
+            }
+          }
+        ],
+        "heading": 297.5529254546222,
+        "speed": 0.015927375304956207,
+        "sensors": [
+          "DRT3602223P5001423",
+          "DRT3602223P5001422",
+          "DRT3602223P5001425",
+          "DRT3602223P5001424",
+          "DRT3602223P5001426"
+        ],
+        "identification": {
+          "detectionType": "drone",
+          "manufacturer": "DJI",
+          "protocol": "OcuSync"
+        },
+        "detectionId": 1499,
+        "positionState": "ALIVE",
+        "uncertainty": 44.34708198993783,
+        "bearings": {
+          "DRT3602223P5001423": 255.99985229572619,
+          "DRT3602223P5001425": 328.29999900760777,
+          "DRT3602223P5001426": 0.000017155393493339943
+        }
+      }
+    ],
+    "directions": {
+      "DRT3602223P5001423": [
+        {
+          "direction": 255.99985229572619,
+          "directionError": 3.4999126915566308,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001425": [
+        {
+          "direction": 328.29999900760777,
+          "directionError": 6.499997056163977,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001426": [
+        {
+          "direction": 0.000017155393493339943,
+          "directionError": 4.500010522957496,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ]
+    },
+    "zones": [],
+    "currentZones": [],
+    "affectedSensors": {
+      "DRT3602223P5001423": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.44209669999998,
+          "longitude": 22.709756900000002,
+          "altitude": 0
+        },
+        "heading": 0
+      },
+      "DRT3602223P5001422": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.43414689999997,
+          "longitude": 22.697269399999982,
+          "altitude": 0
+        },
+        "heading": 337.5
+      },
+      "DRT3602223P5001425": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.40836719999999,
+          "longitude": 22.727010699999937,
+          "altitude": 0
+        },
+        "heading": 337.29999999999995
+      },
+      "DRT3602223P5001424": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.431232499999965,
+          "longitude": 22.687334100000044,
+          "altitude": 0
+        },
+        "heading": 336.29999999999995
+      },
+      "DRT3602223P5001426": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.40717699999999,
+          "longitude": 22.699003199999993,
+          "altitude": 0
+        },
+        "heading": 33.5
+      }
+    },
+    "version": "3"
+  },
+  "timestamp": {
+    "$numberLong": "1659441751159"
+  }
+},{
+  "_id": {
+    "$oid": "62e912573456629335ea233a"
+  },
+  "channel": "alert",
+  "version": 3,
+  "data": {
+    "alertId": "62e91182ff8a76240c473146__128",
+    "alertState": "update",
+    "detections": [
+      {
+        "locationRating": "B",
+        "detectionType": "drone",
+        "level": 100,
+        "positions": [
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748744"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748844"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441748944"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749044"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749144"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749244"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749344"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749444"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749544"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749644"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749744"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749844"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749944"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750044"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750144"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750244"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750345"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750446"
+            }
+          },
+          {
+            "longitude": 22.6988024,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750546"
+            }
+          },
+          {
+            "longitude": 22.6988024,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750646"
+            }
+          },
+          {
+            "longitude": 22.6988024,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750746"
+            }
+          },
+          {
+            "longitude": 22.6988023,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750846"
+            }
+          },
+          {
+            "longitude": 22.6988023,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750947"
+            }
+          },
+          {
+            "longitude": 22.6988022,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751048"
+            }
+          },
+          {
+            "longitude": 22.6988021,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751149"
+            }
+          },
+          {
+            "longitude": 22.698802,
+            "latitude": 48.4347023,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751249"
+            }
+          },
+          {
+            "longitude": 22.6988019,
+            "latitude": 48.4347023,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751350"
+            }
+          },
+          {
+            "longitude": 22.6988017,
+            "latitude": 48.4347023,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751450"
+            }
+          },
+          {
+            "longitude": 22.6988015,
+            "latitude": 48.4347024,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751550"
+            }
+          },
+          {
+            "longitude": 22.6988012,
+            "latitude": 48.4347025,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751650"
+            }
+          }
+        ],
+        "heading": 296.6114785253676,
+        "speed": 0.038682622117503604,
+        "sensors": [
+          "DRT3602223P5001423",
+          "DRT3602223P5001422",
+          "DRT3602223P5001425",
+          "DRT3602223P5001424",
+          "DRT3602223P5001426"
+        ],
+        "identification": {
+          "detectionType": "drone",
+          "manufacturer": "DJI",
+          "protocol": "OcuSync"
+        },
+        "detectionId": 1499,
+        "positionState": "ALIVE",
+        "uncertainty": 42.85903993694776,
+        "bearings": {
+          "DRT3602223P5001423": 255.99985229572619,
+          "DRT3602223P5001425": 328.29999900760777,
+          "DRT3602223P5001426": 0.5000087753143703
+        }
+      }
+    ],
+    "directions": {
+      "DRT3602223P5001423": [
+        {
+          "direction": 255.99985229572619,
+          "directionError": 3.4999126915566308,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001425": [
+        {
+          "direction": 328.29999900760777,
+          "directionError": 6.499997056163977,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001426": [
+        {
+          "direction": 0.5000087753143703,
+          "directionError": 4.250000389052161,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ]
+    },
+    "zones": [],
+    "currentZones": [],
+    "affectedSensors": {
+      "DRT3602223P5001423": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.44209669999998,
+          "longitude": 22.709756900000002,
+          "altitude": 0
+        },
+        "heading": 0
+      },
+      "DRT3602223P5001422": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.43414689999997,
+          "longitude": 22.697269399999982,
+          "altitude": 0
+        },
+        "heading": 337.5
+      },
+      "DRT3602223P5001425": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.40836719999999,
+          "longitude": 22.727010699999937,
+          "altitude": 0
+        },
+        "heading": 337.29999999999995
+      },
+      "DRT3602223P5001424": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.431232499999965,
+          "longitude": 22.687334100000044,
+          "altitude": 0
+        },
+        "heading": 336.29999999999995
+      },
+      "DRT3602223P5001426": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.40717699999999,
+          "longitude": 22.699003199999993,
+          "altitude": 0
+        },
+        "heading": 33.5
+      }
+    },
+    "version": "3"
+  },
+  "timestamp": {
+    "$numberLong": "1659441751662"
+  }
+},{
+  "_id": {
+    "$oid": "62e912583456629335ea233b"
+  },
+  "channel": "alert",
+  "version": 3,
+  "data": {
+    "alertId": "62e91182ff8a76240c473146__128",
+    "alertState": "update",
+    "detections": [
+      {
+        "locationRating": "B",
+        "detectionType": "drone",
+        "level": 100,
+        "positions": [
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749344"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749444"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749544"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749644"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749744"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749844"
+            }
+          },
+          {
+            "longitude": 22.6988026,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441749944"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750044"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750144"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750244"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750345"
+            }
+          },
+          {
+            "longitude": 22.6988025,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750446"
+            }
+          },
+          {
+            "longitude": 22.6988024,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750546"
+            }
+          },
+          {
+            "longitude": 22.6988024,
+            "latitude": 48.4347021,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750646"
+            }
+          },
+          {
+            "longitude": 22.6988024,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750746"
+            }
+          },
+          {
+            "longitude": 22.6988023,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750846"
+            }
+          },
+          {
+            "longitude": 22.6988023,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441750947"
+            }
+          },
+          {
+            "longitude": 22.6988022,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751048"
+            }
+          },
+          {
+            "longitude": 22.6988021,
+            "latitude": 48.4347022,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751149"
+            }
+          },
+          {
+            "longitude": 22.698802,
+            "latitude": 48.4347023,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751249"
+            }
+          },
+          {
+            "longitude": 22.6988019,
+            "latitude": 48.4347023,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751350"
+            }
+          },
+          {
+            "longitude": 22.6988017,
+            "latitude": 48.4347023,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751450"
+            }
+          },
+          {
+            "longitude": 22.6988015,
+            "latitude": 48.4347024,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751550"
+            }
+          },
+          {
+            "longitude": 22.6988012,
+            "latitude": 48.4347025,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751650"
+            }
+          },
+          {
+            "longitude": 22.6988008,
+            "latitude": 48.4347026,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751750"
+            }
+          },
+          {
+            "longitude": 22.6988005,
+            "latitude": 48.4347027,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751850"
+            }
+          },
+          {
+            "longitude": 22.6988,
+            "latitude": 48.4347028,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441751950"
+            }
+          },
+          {
+            "longitude": 22.6987995,
+            "latitude": 48.4347029,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441752050"
+            }
+          },
+          {
+            "longitude": 22.6987989,
+            "latitude": 48.4347031,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441752150"
+            }
+          },
+          {
+            "longitude": 22.6987983,
+            "latitude": 48.4347033,
+            "altitude": 0,
+            "timestamp": {
+              "$numberLong": "1659441752250"
+            }
+          }
+        ],
+        "heading": 296.0052995528393,
+        "speed": 0.09852329218034277,
+        "sensors": [
+          "DRT3602223P5001423",
+          "DRT3602223P5001422",
+          "DRT3602223P5001425",
+          "DRT3602223P5001424",
+          "DRT3602223P5001426"
+        ],
+        "identification": {
+          "detectionType": "drone",
+          "manufacturer": "DJI",
+          "protocol": "OcuSync"
+        },
+        "detectionId": 1499,
+        "positionState": "ALIVE",
+        "uncertainty": 42.69400596130383,
+        "bearings": {
+          "DRT3602223P5001423": 255.99985229572619,
+          "DRT3602223P5001425": 328.29999041324095,
+          "DRT3602223P5001424": 67.7999274879046,
+          "DRT3602223P5001426": 359.9999885075037
+        }
+      }
+    ],
+    "directions": {
+      "DRT3602223P5001423": [
+        {
+          "direction": 255.99985229572619,
+          "directionError": 3.4999126915566308,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001425": [
+        {
+          "direction": 328.29999041324095,
+          "directionError": 6.250006975781446,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001424": [
+        {
+          "direction": 67.7999274879046,
+          "directionError": 7.00011186201084,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ],
+      "DRT3602223P5001426": [
+        {
+          "direction": 359.9999885075037,
+          "directionError": 4.250000389052161,
+          "identification": {
+            "detectionType": "drone",
+            "manufacturer": "DJI",
+            "protocol": "OcuSync"
+          }
+        }
+      ]
+    },
+    "zones": [],
+    "currentZones": [],
+    "affectedSensors": {
+      "DRT3602223P5001423": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.44209669999998,
+          "longitude": 22.709756900000002,
+          "altitude": 0
+        },
+        "heading": 0
+      },
+      "DRT3602223P5001422": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.43414689999997,
+          "longitude": 22.697269399999982,
+          "altitude": 0
+        },
+        "heading": 337.5
+      },
+      "DRT3602223P5001425": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.40836719999999,
+          "longitude": 22.727010699999937,
+          "altitude": 0
+        },
+        "heading": 337.29999999999995
+      },
+      "DRT3602223P5001424": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.431232499999965,
+          "longitude": 22.687334100000044,
+          "altitude": 0
+        },
+        "heading": 336.29999999999995
+      },
+      "DRT3602223P5001426": {
+        "type": "radio",
+        "coordinates": {
+          "latitude": 48.40717699999999,
+          "longitude": 22.699003199999993,
+          "altitude": 0
+        },
+        "heading": 33.5
+      }
+    },
+    "version": "3"
+  },
+  "timestamp": {
+    "$numberLong": "1659441752260"
+  }
+}]
