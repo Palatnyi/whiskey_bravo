@@ -1,3 +1,4 @@
-import dedronePull from './dedrone-pull.js';
+import FlightActivityTracker from './dedrone-pull.js';
 
-dedronePull.task.start();
+const app = new FlightActivityTracker();
+app.start();

@@ -1,3 +1,3 @@
-import dedronePush from "./dedrone-push";
+import dedronePush from "./dedrone-push.js";
 
 dedronePush.enablePush();

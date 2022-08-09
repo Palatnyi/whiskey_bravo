@@ -17,7 +17,7 @@ const botToken = '5401170277:AAGXh_DUBGLqJCJAEVVnHDR9LY2KFrbPXng';
 const bot = new TelegramBot(botToken);
 
 const connectToMongo = async () => {
-  if (dbCache.client) return Promise.value(dbCache);
+  if (dbCache.client) return Promise.resolve(dbCache);
 
   const uri = "mongodb+srv://m001-student:m001-mongodb-basics@sandbox.wiznw.mongodb.net/?retryWrites=true&w=majority";
   const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -30,7 +30,7 @@ const connectToMongo = async () => {
   }
   dbCache = { client };
 
-  return Promise.value({ client });
+  return Promise.resolve({ client });
 }
 
 const app = express();
@@ -318,8 +318,8 @@ const deleteInactiveAlertsTask = cron.schedule('0 */4 * * *', async () => {
 
 const enablePush = async () => {
   app.listen(PORT, async () => {
-    await connectToMongo();
-    deleteInactiveAlertsTask.start();
+    // await connectToMongo();
+    // deleteInactiveAlertsTask.start();
   });
 }
 

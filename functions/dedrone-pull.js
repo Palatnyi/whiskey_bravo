@@ -8,7 +8,7 @@ import { MongoClient, ServerApiVersion } from 'mongodb';
 class FlightActivityTracker {
   constructor() {
     this._dbCache;
-    this.isPulling;
+    this.isPulling = false;
     this._dbName = 'dedrone';
     this._collectionName = 'alerts'
     this.chat_id = '-1001678724997';
@@ -22,8 +22,6 @@ class FlightActivityTracker {
       drone: new TelegramBot('5401170277:AAGXh_DUBGLqJCJAEVVnHDR9LY2KFrbPXng'),
       remote: new TelegramBot('5307737139:AAGsvSzJWtGjpAf_miSXcIBaCViOVzH0SjI')
     };
-
-    this._telegramMessagesCount = {};
 
   }
 
@@ -73,39 +71,48 @@ class FlightActivityTracker {
     return await client.db(dbName).collection(collectionName);
   }
 
-  getExtendedSearchQuery = ({ detectionId, identification, detectionType }) => {
+  getExtendedSearchQuery = ({ detectionType, identification, position, maxDistance }) => {
+    const query = [];
     const keys = ['manufacturer', 'protocol', 'detectionType', 'label'];
 
-    const extendedQuery = keys.map(key => {
+    for (let i = 0; i <= keys.length; i += 1) {
+      const key = keys[i];
       const value = identification[key];
 
-      return {
-        $or: [{
-          [`${detectionType}.identification.${key}`]: { $eq: value }
-        }, {
-          [`${detectionType}.identification.${key}`]: { $type: 9 }
-        }, {
-          [`${detectionType}.identification.${key}`]: { $exists: false }
-        },]
+      if (value) {
+        query.push({
+          $or: [{
+            [`identification.${key}`]: { $eq: value }
+          }, {
+            [`identification.${key}`]: { $type: 9 }
+          }, {
+            [`identification.${key}`]: { $exists: false }
+          },]
+        })
+      }
+    }
+
+    query.push({ detectionType });
+    query.push({ 'timestampWindow': { $exists: true } });
+    query.push({ 'timestampWindow': { $gte: Date.now() } });
+    query.push({
+      position: {
+        $near: {
+          $geometry: position,
+          $maxDistance: maxDistance
+        }
       }
     });
 
-    const and = extendedQuery.concat([
-      { $and: [{ [`${detectionType}.timestampWindow`]: { $exists: true } }, { [`${detectionType}.timestampWindow`]: { $gte: Date.now() } }] },
-    ])
 
     return {
-      $or: [{
-        detectionId
-      }, {
-        $and: and
-      }]
+      $and: query
     }
   }
 
   isPositionEquals = ({ oldPosition = {}, newPosition = {} }) => {
-    const oldCoordinates = _.pick(oldPosition, ['latitude', 'longitude']);
-    const newCoordinates = _.pick(newPosition, ['latitude', 'longitude']);
+    const oldCoordinates = _.pick(oldPosition, ['type', 'coordinates']);
+    const newCoordinates = _.pick(newPosition, ['type', 'coordinates']);
 
     return _.isEqual(oldCoordinates, newCoordinates);
   }
@@ -140,28 +147,26 @@ class FlightActivityTracker {
     return response;
   }
 
-  telegramOperationCount = (detectionType, internalId, type) => {
-    const typeCounter = this._telegramMessagesCount[detectionType];
-
-    if (!typeCounter) {
-      typeCounter = {
-        count: 1,
-        messagesMeta: [{ internalId, type, detectionType }],
-      };
-    } else {
-      typeCounter = {
-        count: typeCounter.count + 1,
-        messagesMeta: typeCounter.messagesMeta.concat([{ internalId, type, detectionType }])
-      };
-    }
-
-    this._telegramMessagesCount[detectionType] = { ...typeCounter };
-  }
-
   setAlertStatus = (internalId, msg) => {
     this._alertsStatuses = {
       [internalId]: { msg }
     }
+  }
+
+  getCurrentAlert = async ({ client, query }) => {
+    let currentDoc;
+    try {
+      currentDoc = await client.db(this._dbName).collection(this._collectionName).find(query).sort({ timestampWindow: -1 }).limit(1).toArray();
+
+    } catch (e) {
+      console.log('Error. getCurrentAlert', e);
+    }
+
+    return currentDoc[0];
+  }
+
+  updateCurrentAlert = async ({ client, query, doc }) => {
+    return await client.db(this._dbName).collection(this._collectionName).findOneAndUpdate(query, doc, { upsert: true });
   }
 
   pullAlerts = async () => {
@@ -169,14 +174,11 @@ class FlightActivityTracker {
       return
     }
 
-    this._alertsStatuses = {};
-    this._telegramMessagesCount = {};
-    
     console.log('pulling...');
-    this.isPulling = true;
 
-    const { client } = await this.connectToMongo();
-    const collection = await this.getCollection(client, this._dbName, this._collectionName);
+    this.isPulling = true;
+    this._alertsStatuses = {};
+
     let systemState = await this.requestSystemState({ url: this._testurl, token: this._dedroneToken });
 
     if (systemState.error) {
@@ -190,7 +192,7 @@ class FlightActivityTracker {
     if (!alerts.length) {
       console.log('No alerts in systemState response');
       this.isPulling = false;
-      return { error: false, msg: 'No alerts in systemState response', ...this._telegramMessagesCount }
+      return { error: false, msg: 'No alerts in systemState response' }
     }
 
     let alertsStatuses = {};
@@ -253,12 +255,22 @@ class FlightActivityTracker {
       positions = _.last(positions);
 
       const newPosition = {
-        longitude: positions[0],
-        latitude: positions[1]
+        type: "Point",
+        coordinates: [positions[0], positions[1]] // lon  lat
       }
 
-      const currentDoc = await collection.findOne(this.getExtendedSearchQuery({ detectionId, identification, detectionType }));
-      const oldPosition = _.get(currentDoc, `${detectionType}.position`, {});
+      const { client } = await this.connectToMongo();
+
+      const query = this.getExtendedSearchQuery({
+        detectionType,
+        identification,
+        position: newPosition,
+        maxDistance: detectionType === 'drone' ? 1000 : 200,
+      });
+
+      const currentDoc = await this.getCurrentAlert({ client, query })
+
+      const oldPosition = _.get(currentDoc, `position`, {});
 
       if (this.isPositionEquals({ oldPosition, newPosition })) {
         console.log('positions equals');
@@ -266,21 +278,20 @@ class FlightActivityTracker {
       }
 
       const timestamp = Date.now();
-      const timestampWindow = timestamp + 120000;
-      detectionId = _.get(currentDoc, 'detectionId', detectionId);
+      const timestampWindow = detectionType === 'drone' ? timestamp + 180000 : timestamp + 360000;
 
       let set = {
-        detectionId,
-        [`${detectionType}.timestamp`]: timestamp,
-        [`${detectionType}.position`]: newPosition,
-        [`${detectionType}.identification`]: identification,
-        [`${detectionType}.timestampWindow`]: timestampWindow,
+        detectionType,
+        [`timestamp`]: timestamp,
+        [`position`]: newPosition,
+        [`identification`]: identification,
+        [`timestampWindow`]: timestampWindow,
       }
 
       const bot = this._bots[detectionType];
-      const { latitude, longitude } = newPosition;
-
-      const isEditMessage = currentDoc && currentDoc[detectionType] && currentDoc[detectionType].liveLocationStarted;
+      const longitude = newPosition.coordinates[0]
+      const latitude = newPosition.coordinates[1]
+      const isEditMessage = currentDoc && currentDoc.liveLocationStarted;
 
       if (isEditMessage) {
         try {
@@ -288,8 +299,8 @@ class FlightActivityTracker {
             latitude,
             longitude,
             {
-              chat_id,
-              message_id: currentDoc[detectionType].message_id,
+              chat_id: this.chat_id,
+              message_id: currentDoc.message_id,
               horizontal_accuracy: 1
             }
           );
@@ -300,10 +311,10 @@ class FlightActivityTracker {
       } else {
         try {
 
-          await bot.sendMessage(chat_id, this.getWelcomeMessage(detectionType));
+          await bot.sendMessage(this.chat_id, this.getWelcomeMessage(detectionType));
 
           const { message_id } = await bot.sendLocation(
-            chat_id,
+            this.chat_id,
             latitude,
             longitude, {
             live_period: 4000,
@@ -312,8 +323,8 @@ class FlightActivityTracker {
 
           set = {
             ...set,
-            [`${detectionType}.message_id`]: message_id,
-            [`${detectionType}.liveLocationStarted`]: true,
+            message_id,
+            liveLocationStarted: true,
           }
 
           console.log('Live location started', { latitude, longitude }, message_id)
@@ -322,10 +333,9 @@ class FlightActivityTracker {
         }
       }
 
-      await collection.findOneAndUpdate({ detectionId }, { $set: set }, { upsert: true });
+      const doc = { $set: set, $addToSet: { detectionIds: [detectionId] } };
+      await this.updateCurrentAlert({ client, query, doc })
 
-      const type = isEditMessage ? 'edit' : 'start';
-      this.telegramOperationCount(detectionType, internalId, type);
     }
 
     this.isPulling = false;
@@ -334,7 +344,6 @@ class FlightActivityTracker {
   }
 
   start = async () => {
-    await this.connectToMongo();
 
     this._task = cron.schedule(this._pullFrequency, async () => {
       await this.pullAlerts();
@@ -351,5 +360,6 @@ class FlightActivityTracker {
 }
 
 export default FlightActivityTracker
+
 
 

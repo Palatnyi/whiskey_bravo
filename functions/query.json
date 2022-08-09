@@ -1,0 +1,107 @@
+{
+  "$and": [
+    {
+      "$or": [
+        {
+          "identification.manufacturer": {
+            "$eq": "DJI"
+          }
+        },
+        {
+          "identification.manufacturer": {
+            "$type": 9
+          }
+        },
+        {
+          "identification.manufacturer": {
+            "$exists": false
+          }
+        }
+      ]
+    },
+    {
+      "$or": [
+        {
+          "identification.protocol": {
+            "$eq": "OcuSync"
+          }
+        },
+        {
+          "identification.protocol": {
+            "$type": 9
+          }
+        },
+        {
+          "identification.protocol": {
+            "$exists": false
+          }
+        }
+      ]
+    },
+    {
+      "$or": [
+        {
+          "identification.detectionType": {
+            "$eq": "drone"
+          }
+        },
+        {
+          "identification.detectionType": {
+            "$type": 9
+          }
+        },
+        {
+          "identification.detectionType": {
+            "$exists": false
+          }
+        }
+      ]
+    },
+    {
+      "$or": [
+        {
+          "identification.label": {
+            "$eq": "DJI OcuSync"
+          }
+        },
+        {
+          "identification.label": {
+            "$type": 9
+          }
+        },
+        {
+          "identification.label": {
+            "$exists": false
+          }
+        }
+      ]
+    },
+    {
+      "detectionType": "drone"
+    },
+    {
+      "timestampWindow": {
+        "$exists": true
+      }
+    },
+    {
+      "timestampWindow": {
+        "$gte": 1660020462407
+      }
+    },
+    {
+      "position": {
+        "$near": {
+          "$geometry": {
+            "type": "Point",
+            "coordinates": [
+              22.6993463,
+              48.4364504
+            ]
+          },
+          "$maxDistance": 1000
+        }
+      }
+    }
+  ]
+}
