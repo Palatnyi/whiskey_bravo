@@ -6,7 +6,10 @@ yarn-debug.log*
 yarn-error.log*
 firebase-debug.log*
 firebase-debug.*.log*
-testPositionsUpdate_4.json
+
+pulledAlertsTest.json
+
+
 
 
 # Firebase cache
