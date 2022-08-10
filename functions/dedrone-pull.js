@@ -1,27 +1,29 @@
 import _ from 'lodash';
+import cors from 'cors';
 import axios from 'axios';
 import cron from 'node-cron';
+import express from 'express';
 import TelegramBot from 'node-telegram-bot-api';
 import { MongoClient, ServerApiVersion } from 'mongodb';
-
 
 class FlightActivityTracker {
   constructor() {
     this._dbCache;
     this.isPulling = false;
-    this._dbName = 'dedrone';
-    this._collectionName = 'alerts'
-    this.chat_id = '-1001678724997';
-    this._pullFrequency = "*/5 * * * * *"
-    this._testurl = 'http://localhost:3000/test-pull';
-    this._dedroneToken = 'BedRxVUpuiZytmsqLnjEcxMhcsypWJhJ';
-    this._pullUrl = 'https://ukr2.cloud.dedrone.com/api/1.0/systemstate';
-    this._mongoUri = 'mongodb+srv://m001-student:m001-mongodb-basics@sandbox.wiznw.mongodb.net/?retryWrites=true&w=majority';
+    this._dbName = process.env.dbName;
+    this._collectionName = process.env.collectionName
+    this.chat_id = process.env.chat_id;
+    this._pullFrequency = process.env.pullFrequency;
+    this._dedroneToken = process.env.dedroneToken;
+    this._pullUrl = process.env.pullUrl;
+    this._mongoUri = process.env.mongoUri;;
 
     this._bots = {
-      drone: new TelegramBot('5401170277:AAGXh_DUBGLqJCJAEVVnHDR9LY2KFrbPXng'),
-      remote: new TelegramBot('5307737139:AAGsvSzJWtGjpAf_miSXcIBaCViOVzH0SjI')
+      drone: new TelegramBot(process.env.drone),
+      remote: new TelegramBot(process.env.remote)
     };
+
+    this._alertsStatuses = {};
 
   }
 
@@ -57,21 +59,7 @@ class FlightActivityTracker {
     }
   }
 
-  getCollection = async (client, dbName, collectionName) => {
-    if (!dbName) {
-      console.log('No DB provided');
-      return { error: true, msg: 'No DB provided' };
-    }
-
-    if (!collectionName) {
-      console.log('NoCollection name provided');
-      return { error: true, msg: 'No DB provided' }
-    }
-
-    return await client.db(dbName).collection(collectionName);
-  }
-
-  getExtendedSearchQuery = ({ detectionType, identification, position, maxDistance }) => {
+  getExtendedSearchQuery = ({ detectionType, identification = {}, position, maxDistance }) => {
     const query = [];
     const keys = ['manufacturer', 'protocol', 'detectionType', 'label'];
 
@@ -131,13 +119,10 @@ class FlightActivityTracker {
 
 
   requestSystemState = async (opt = {}) => {
-    const url = opt.url || this._pullUrl;
-    const token = opt.token || this._dedroneToken;
-
     let response;
     try {
       console.log('requesting /systemstate...');
-      const { data } = await axios.get(url, { headers: { 'Dedrone-Auth-Token': token } });
+      const { data } = await axios.get(this._pullUrl, { headers: { 'Dedrone-Auth-Token': this._dedroneToken } });
       response = data;
     } catch (e) {
       console.log('error')
@@ -145,12 +130,6 @@ class FlightActivityTracker {
     }
 
     return response;
-  }
-
-  setAlertStatus = (internalId, msg) => {
-    this._alertsStatuses = {
-      [internalId]: { msg }
-    }
   }
 
   getCurrentAlert = async ({ client, query }) => {
@@ -169,6 +148,51 @@ class FlightActivityTracker {
     return await client.db(this._dbName).collection(this._collectionName).findOneAndUpdate(query, doc, { upsert: true });
   }
 
+  sendLocation = async ({
+    latitude,
+    longitude,
+    detectionType,
+  }) => {
+    const bot = this._bots[detectionType];
+    await bot.sendMessage(this.chat_id, this.getWelcomeMessage(detectionType));
+
+    return await bot.sendLocation(
+      this.chat_id,
+      latitude,
+      longitude, {
+      live_period: 4000,
+      protect_content: true
+    });
+  }
+
+
+  updateLocation = async ({
+    latitude,
+    longitude,
+    message_id,
+    detectionType,
+  }) => {
+    const bot = this._bots[detectionType];
+
+    await bot.editMessageLiveLocation(
+      latitude,
+      longitude,
+      {
+        message_id,
+        chat_id: this.chat_id,
+        horizontal_accuracy: 1
+      }
+    );
+
+  }
+
+  setAlertStatus = (key, value) => {
+    this._alertsStatuses = {
+      ...this._alertsStatuses,
+      [key]: value
+    };
+  }
+
   pullAlerts = async () => {
     if (this.isPulling) {
       return
@@ -179,7 +203,7 @@ class FlightActivityTracker {
     this.isPulling = true;
     this._alertsStatuses = {};
 
-    let systemState = await this.requestSystemState({ url: this._testurl, token: this._dedroneToken });
+    let systemState = await this.requestSystemState({ url: this._pullUrl, token: this._dedroneToken });
 
     if (systemState.error) {
       console.log(systemState.msg);
@@ -187,7 +211,7 @@ class FlightActivityTracker {
       return { ...systemState };
     }
 
-    const alerts = _.get(systemState, 'data.currentAlertState.alerts', [])
+    const alerts = _.get(systemState, 'currentAlertState.alerts', [])
 
     if (!alerts.length) {
       console.log('No alerts in systemState response');
@@ -201,12 +225,9 @@ class FlightActivityTracker {
       const { internalId, detections = [] } = alert;
 
       if (!detections.length) {
-        alertsStatuses = {
-          ...alertsStatuses,
-          [internalId]: {
-            msg: 'no detections in the alert'
-          },
-        }
+        this.setAlertStatus(internalId, {
+          msg: 'no detections in the alert'
+        });
         console.log('no detections in the alert');
         continue
       }
@@ -214,12 +235,9 @@ class FlightActivityTracker {
       const singleDetection = detections.find(det => det.detectionId === internalId);
 
       if (!singleDetection) {
-        alertsStatuses = {
-          ...alertsStatuses,
-          [internalId]: {
-            msg: 'no singleDetection in the detections array'
-          },
-        }
+        this.setAlertStatus(internalId, {
+          msg: 'no singleDetection in the detections array'
+        });
         console.log('no singleDetection in the detections array');
         continue
       }
@@ -231,23 +249,17 @@ class FlightActivityTracker {
       const { detectionType } = identification;
 
       if (!detectionType) {
-        alertsStatuses = {
-          ...alertsStatuses,
-          [internalId]: {
-            msg: 'device (remote/drone) not recognized'
-          },
-        }
+        this.setAlertStatus(internalId, {
+          msg: 'device (remote/drone) not recognized'
+        });
         console.log('device (remote/drone) has not been recognised yet');
         continue
       }
 
       if (!positions.length) {
-        alertsStatuses = {
-          ...alertsStatuses,
-          [internalId]: {
-            msg: 'no positions in singleDetection object'
-          },
-        }
+        this.setAlertStatus(internalId, {
+          msg: 'no positions in singleDetection object'
+        });
         console.log('no positions in singleDetection object');
         continue
       }
@@ -288,44 +300,31 @@ class FlightActivityTracker {
         [`timestampWindow`]: timestampWindow,
       }
 
-      const bot = this._bots[detectionType];
       const longitude = newPosition.coordinates[0]
       const latitude = newPosition.coordinates[1]
-      const isEditMessage = currentDoc && currentDoc.liveLocationStarted;
 
-      if (isEditMessage) {
+      if (currentDoc && currentDoc.liveLocationStarted) {
         try {
-          await bot.editMessageLiveLocation(
+          await this.updateLocation({
             latitude,
             longitude,
-            {
-              chat_id: this.chat_id,
-              message_id: currentDoc.message_id,
-              horizontal_accuracy: 1
-            }
-          );
+            detectionType,
+            message_id: currentDoc.message_id
+          });
           console.log('EDIT', { latitude, longitude });
         } catch (e) {
           console.log('edit errror', e);
         }
       } else {
         try {
-
-          await bot.sendMessage(this.chat_id, this.getWelcomeMessage(detectionType));
-
-          const { message_id } = await bot.sendLocation(
-            this.chat_id,
+          const { message_id } = await this.sendLocation({
             latitude,
-            longitude, {
-            live_period: 4000,
-            protect_content: true
+            longitude,
+            detectionType,
           });
 
-          set = {
-            ...set,
-            message_id,
-            liveLocationStarted: true,
-          }
+          set.message_id = message_id;
+          set.liveLocationStarted = true;
 
           console.log('Live location started', { latitude, longitude }, message_id)
         } catch (e) {
@@ -340,7 +339,7 @@ class FlightActivityTracker {
 
     this.isPulling = false;
 
-    return { ...alertsStatuses };
+    return { ...this._alertsStatuses };
   }
 
   start = async () => {
