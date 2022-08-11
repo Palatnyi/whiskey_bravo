@@ -2,7 +2,6 @@ import _ from 'lodash';
 import cors from 'cors';
 import axios from 'axios';
 import cron from 'node-cron';
-import express from 'express';
 import TelegramBot from 'node-telegram-bot-api';
 import { MongoClient, ServerApiVersion } from 'mongodb';
 
@@ -11,12 +10,21 @@ class FlightActivityTracker {
     this._dbCache;
     this.isPulling = false;
     this._dbName = process.env.dbName;
-    this._collectionName = process.env.collectionName
-    this.chat_id = process.env.chat_id;
-    this._pullFrequency = process.env.pullFrequency;
-    this._dedroneToken = process.env.dedroneToken;
+    this._chat_id = process.env.chat_id;
     this._pullUrl = process.env.pullUrl;
-    this._mongoUri = process.env.mongoUri;;
+    this._mongoUri = process.env.mongoUri;
+    this._dedroneToken = process.env.dedroneToken;
+    this._pullFrequency = process.env.pullFrequency;
+    this._collectionName = process.env.collectionName;
+    this._deleteFrequency = process.env.deleteFrequency;
+    this._maxAlertLifetime = parseInt(process.env.maxAlertLifetime);
+    this._maxDroneDistance = parseInt(process.env.maxDroneDistance);
+    this._maxRemoteDistance = parseInt(process.env.maxRemoteDistance);
+    this._maxDroneTimestampWindow = parseInt(process.env.maxDroneTimestampWindow);
+    this._maxRemoteTimestampWindow = parseInt(process.env.maxRemoteTimestampWindow);
+
+    console.log(this._maxAlertLifetime, this._maxDroneDistance , this._maxRemoteDistance, this._maxDroneDistance, this._maxDroneTimestampWindow, this._maxRemoteTimestampWindow )
+
 
     this._bots = {
       drone: new TelegramBot(process.env.drone),
@@ -24,7 +32,6 @@ class FlightActivityTracker {
     };
 
     this._alertsStatuses = {};
-
   }
 
   setCollectionName = name => this._collectionName = name;
@@ -117,7 +124,6 @@ class FlightActivityTracker {
     return message;
   }
 
-
   requestSystemState = async (opt = {}) => {
     let response;
     try {
@@ -148,21 +154,56 @@ class FlightActivityTracker {
     return await client.db(this._dbName).collection(this._collectionName).findOneAndUpdate(query, doc, { upsert: true });
   }
 
+  getOutdatedDocuments = async ({ client }) => {
+    return await client.db(this._dbName).collection(this._collectionName).aggregate([{
+      $project: { _id: 0 }
+    },
+    {
+      $addFields: {
+        alertLifetime: { $subtract: [Date.now(), '$timestamp'] }
+      }
+    },
+    {
+      $match: {
+        alertLifetime: { $gt: this._maxAlertLifetime }
+      }
+    },
+    { $project: { alertLifetime: 0 } }
+    ]).toArray();
+  }
+
+  deleteMany = async ({ client, query = {} }) => {
+    let result;
+    try {
+      result = await client.db(this._dbName).collection(this._collectionName).deleteMany(query);
+    } catch (e) {
+      console.log('Failed to delete many documents from the DB');
+
+    }
+    return result.deletedCount;
+  }
+
   sendLocation = async ({
     latitude,
     longitude,
     detectionType,
   }) => {
     const bot = this._bots[detectionType];
-    await bot.sendMessage(this.chat_id, this.getWelcomeMessage(detectionType));
 
-    return await bot.sendLocation(
-      this.chat_id,
+    const welcome = await bot.sendMessage(this._chat_id, this.getWelcomeMessage(detectionType));
+
+    const location = await bot.sendLocation(
+      this._chat_id,
       latitude,
       longitude, {
       live_period: 4000,
       protect_content: true
     });
+
+    return {
+      welcomeMessageId: welcome.message_id,
+      locationMessageId: location.message_id,
+    }
   }
 
 
@@ -179,11 +220,21 @@ class FlightActivityTracker {
       longitude,
       {
         message_id,
-        chat_id: this.chat_id,
+        chat_id: this._chat_id,
         horizontal_accuracy: 1
       }
     );
 
+  }
+
+  deleteTelegramMessages = async ({ msgs, detectionType }) => {
+    for (let msgId of msgs) {
+      try {
+        await this._bots[detectionType].deleteMessage(this._chat_id, msgId);
+      } catch (e) {
+        console.log('Faile to delete msg from telegram:', msgId);
+      }
+    }
   }
 
   setAlertStatus = (key, value) => {
@@ -218,8 +269,6 @@ class FlightActivityTracker {
       this.isPulling = false;
       return { error: false, msg: 'No alerts in systemState response' }
     }
-
-    let alertsStatuses = {};
 
     for (const alert of alerts) {
       const { internalId, detections = [] } = alert;
@@ -277,7 +326,7 @@ class FlightActivityTracker {
         detectionType,
         identification,
         position: newPosition,
-        maxDistance: detectionType === 'drone' ? 1000 : 200,
+        maxDistance: detectionType === 'drone' ? this._maxDroneDistance : this._maxRemoteDistance,
       });
 
       const currentDoc = await this.getCurrentAlert({ client, query })
@@ -290,7 +339,7 @@ class FlightActivityTracker {
       }
 
       const timestamp = Date.now();
-      const timestampWindow = detectionType === 'drone' ? timestamp + 180000 : timestamp + 360000;
+      const timestampWindow = detectionType === 'drone' ? timestamp + this._maxDroneTimestampWindow : timestamp + this._maxRemoteTimestampWindow;
 
       let set = {
         detectionType,
@@ -317,23 +366,24 @@ class FlightActivityTracker {
         }
       } else {
         try {
-          const { message_id } = await this.sendLocation({
+          const { welcomeMessageId, locationMessageId } = await this.sendLocation({
             latitude,
             longitude,
             detectionType,
           });
 
-          set.message_id = message_id;
+          set.message_id = locationMessageId;
           set.liveLocationStarted = true;
+          set.messagesIds = [welcomeMessageId, locationMessageId];
 
-          console.log('Live location started', { latitude, longitude }, message_id)
+          console.log('Live location started', { latitude, longitude }, locationMessageId)
         } catch (e) {
           console.error('START LIVE LOCATION FAILED', { latitude, longitude }, e);
         }
       }
 
-      const doc = { $set: set, $addToSet: { detectionIds: [detectionId] } };
-      await this.updateCurrentAlert({ client, query, doc })
+      const doc = { $set: set, $addToSet: { detectionIds: detectionId } };
+      await this.updateCurrentAlert({ client, query, doc });
 
     }
 
@@ -355,6 +405,45 @@ class FlightActivityTracker {
     if (this._task) {
       this._task.stop();
     }
+
+    if (this._deteleTask) {
+      this._deteleTask.stop();
+    }
+  }
+
+  runAutoClean = async () => {
+    this._deteleTask = cron.schedule(this._deleteFrequency, async () => {
+      console.log('delete task is running');
+      const { client } = await this.connectToMongo();
+      const outDatedAlerts = await this.getOutdatedDocuments({ client });
+
+      if (!outDatedAlerts.length) {
+        console.log('no document found for auto delete');
+        return;
+      }
+
+      let detectionIds = [];
+      const msgs = {
+        drone: [],
+        remote: [],
+      }
+
+      for (let alert of outDatedAlerts) {
+        detectionIds = detectionIds.concat(alert.detectionIds || [])
+        msgs[alert.detectionType] = msgs[alert.detectionType].concat(alert.messagesIds || []);
+      }
+   
+      await this.deleteTelegramMessages({ detectionType: 'drone', msgs: msgs.drone });
+      await this.deleteTelegramMessages({ detectionType: 'remote', msgs: msgs.remote });
+
+      const query = {
+        detectionIds: {
+          $in: detectionIds
+        }
+      }
+
+      await this.deleteMany({ client, query });
+    });
   }
 }
 

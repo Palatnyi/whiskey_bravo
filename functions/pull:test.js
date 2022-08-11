@@ -13,11 +13,12 @@ app.use(cors({ origin: true }));
 
 let i = 0;
 app.get('/test-pull', async (req, res) => {
-  res.send({ data: { currentAlertState: { alerts: pulledAlertsTest[i].alerts } } });
+  res.send({ currentAlertState: { alerts: pulledAlertsTest[i].alerts } });
   i += 1;
 });
 
 app.listen(3000, async () => {
   console.log('Listening on PORT', 3000);
   flt.start();
+  flt.runAutoClean();
 });
