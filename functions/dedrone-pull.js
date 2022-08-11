@@ -23,9 +23,6 @@ class FlightActivityTracker {
     this._maxDroneTimestampWindow = parseInt(process.env.maxDroneTimestampWindow);
     this._maxRemoteTimestampWindow = parseInt(process.env.maxRemoteTimestampWindow);
 
-    console.log(this._maxAlertLifetime, this._maxDroneDistance , this._maxRemoteDistance, this._maxDroneDistance, this._maxDroneTimestampWindow, this._maxRemoteTimestampWindow )
-
-
     this._bots = {
       drone: new TelegramBot(process.env.drone),
       remote: new TelegramBot(process.env.remote)
@@ -68,7 +65,7 @@ class FlightActivityTracker {
 
   getExtendedSearchQuery = ({ detectionType, identification = {}, position, maxDistance }) => {
     const query = [];
-    const keys = ['manufacturer', 'protocol', 'detectionType', 'label'];
+    const keys = ['manufacturer', 'protocol', 'detectionType', 'uuid'];
 
     for (let i = 0; i <= keys.length; i += 1) {
       const key = keys[i];
