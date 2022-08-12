@@ -109,18 +109,6 @@ class FlightActivityTracker {
     return _.isEqual(oldCoordinates, newCoordinates);
   }
 
-  getWelcomeMessage = (detectionType) => {
-    let message = `Запілінговано оператора дрону 🥸 🏴‍☠`;
-
-    if (detectionType === 'drone') {
-      message =
-        `Запілінговано дрон 🚨🚨🚨
-  Надсилаю координати...`
-    }
-
-    return message;
-  }
-
   requestSystemState = async (opt = {}) => {
     let response;
     try {
@@ -180,25 +168,38 @@ class FlightActivityTracker {
     return result.deletedCount;
   }
 
+  getReplyMarkup = ({ detectionType, latitude, longitude, identification }) => {
+    const text = detectionType === 'drone' ? `Дрон 🚨 ${identification.model || ''}` : `Оператор 🥸 ${identification.model || ''}`
+    const reply_markup = [[
+      {
+        text,
+        url: `http://www.google.com/maps/place/${latitude},${longitude}`,
+        callback_data: 'ololo'
+      }
+    ]];
+
+    return reply_markup;
+  }
+
   sendLocation = async ({
     latitude,
     longitude,
     detectionType,
+    identification,
   }) => {
     const bot = this._bots[detectionType];
-
-    const welcome = await bot.sendMessage(this._chat_id, this.getWelcomeMessage(detectionType));
 
     const location = await bot.sendLocation(
       this._chat_id,
       latitude,
-      longitude, {
-      live_period: 4000,
-      protect_content: true
-    });
+      longitude,
+      {
+        live_period: 4000,
+        protect_content: true,
+        reply_markup: { inline_keyboard: this.getReplyMarkup({ detectionType, latitude, longitude, identification }) }
+      });
 
     return {
-      welcomeMessageId: welcome.message_id,
       locationMessageId: location.message_id,
     }
   }
@@ -209,6 +210,7 @@ class FlightActivityTracker {
     longitude,
     message_id,
     detectionType,
+    identification,
   }) => {
     const bot = this._bots[detectionType];
 
@@ -218,7 +220,8 @@ class FlightActivityTracker {
       {
         message_id,
         chat_id: this._chat_id,
-        horizontal_accuracy: 1
+        horizontal_accuracy: 1,
+        reply_markup: { inline_keyboard: this.getReplyMarkup({ detectionType, latitude, longitude, identification }) }
       }
     );
 
@@ -355,6 +358,8 @@ class FlightActivityTracker {
             latitude,
             longitude,
             detectionType,
+            identification,
+            protect_content: true,
             message_id: currentDoc.message_id
           });
           console.log('EDIT', { latitude, longitude });
@@ -363,15 +368,16 @@ class FlightActivityTracker {
         }
       } else {
         try {
-          const { welcomeMessageId, locationMessageId } = await this.sendLocation({
+          const { locationMessageId } = await this.sendLocation({
             latitude,
             longitude,
             detectionType,
+            identification,
           });
 
           set.message_id = locationMessageId;
           set.liveLocationStarted = true;
-          set.messagesIds = [welcomeMessageId, locationMessageId];
+          set.messagesIds = [locationMessageId];
 
           console.log('Live location started', { latitude, longitude }, locationMessageId)
         } catch (e) {
@@ -429,7 +435,7 @@ class FlightActivityTracker {
         detectionIds = detectionIds.concat(alert.detectionIds || [])
         msgs[alert.detectionType] = msgs[alert.detectionType].concat(alert.messagesIds || []);
       }
-   
+
       await this.deleteTelegramMessages({ detectionType: 'drone', msgs: msgs.drone });
       await this.deleteTelegramMessages({ detectionType: 'remote', msgs: msgs.remote });
 
