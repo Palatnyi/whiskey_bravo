@@ -3,8 +3,8 @@
   "description": "Cloud Functions for Firebase",
   "scripts": {
     "pull:prod": "node -r dotenv/config pull.js dotenv_config_path=./.env",
-    "pull:dev": "node -r dotenv/config pull:test.js dotenv_config_path=./.env.local",
-    "test": "mocha ./dedrone-pull.test.js -r dotenv/config dotenv_config_path=./.env.local"
+    "pull:dev": "node -r dotenv/config pull:test.js dotenv_config_path=./.envlocal",
+    "test": "mocha ./dedrone-pull.test.js -r dotenv/config dotenv_config_path=./.envlocal"
   },
   "type": "module",
   "engines": {

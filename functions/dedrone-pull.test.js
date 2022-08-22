@@ -442,6 +442,8 @@ describe('dedron-pull.js', async () => {
     const dropResult = await flt.dropHistoryCollection({ client });
     assert.equal(dropResult, true);
 
+    await flt.deleteMany({ client });
+
   });
 });
 
