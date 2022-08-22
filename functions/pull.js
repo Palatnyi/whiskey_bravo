@@ -5,4 +5,4 @@ console.log('ENV:', process.env.currentEnv);
 const app = new FlightActivityTracker();
 
 app.start();
-// app.runAutoClean();
+app.saveHistory();

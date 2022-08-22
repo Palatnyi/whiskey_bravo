@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import cors from 'cors';
 import axios from 'axios';
 import cron from 'node-cron';
 import TelegramBot from 'node-telegram-bot-api';
@@ -13,15 +12,17 @@ class FlightActivityTracker {
     this._chat_id = process.env.chat_id;
     this._pullUrl = process.env.pullUrl;
     this._mongoUri = process.env.mongoUri;
-    this._dedroneToken = process.env.dedroneToken;
+    this._token = process.env.token;
     this._pullFrequency = process.env.pullFrequency;
     this._collectionName = process.env.collectionName;
     this._deleteFrequency = process.env.deleteFrequency;
     this._maxAlertLifetime = parseInt(process.env.maxAlertLifetime);
     this._maxDroneDistance = parseInt(process.env.maxDroneDistance);
     this._maxRemoteDistance = parseInt(process.env.maxRemoteDistance);
+    this._alertHistoryCollection = process.env.alertsHistoryCollection;
     this._maxDroneTimestampWindow = parseInt(process.env.maxDroneTimestampWindow);
     this._maxRemoteTimestampWindow = parseInt(process.env.maxRemoteTimestampWindow);
+    this._header = process.env.header;
 
     this._bots = {
       drone: new TelegramBot(process.env.drone),
@@ -109,15 +110,15 @@ class FlightActivityTracker {
     return _.isEqual(oldCoordinates, newCoordinates);
   }
 
-  requestSystemState = async (opt = {}) => {
+  requestSystemState = async () => {
     let response;
     try {
       console.log('requesting /systemstate...');
-      const { data } = await axios.get(this._pullUrl, { headers: { 'Dedrone-Auth-Token': this._dedroneToken } });
+      const { data } = await axios.get(this._pullUrl, { headers: { [this._header]: this._token } });
       response = data;
     } catch (e) {
       console.log('error')
-      response = { error: true, msg: 'Failed to request dedrone API' };
+      response = { error: true, msg: 'Failed to request API' };
     }
 
     return response;
@@ -159,12 +160,15 @@ class FlightActivityTracker {
 
   deleteMany = async ({ client, query = {} }) => {
     let result;
+
     try {
+      console.log('deleting data form the main collection');
       result = await client.db(this._dbName).collection(this._collectionName).deleteMany(query);
     } catch (e) {
       console.log('Failed to delete many documents from the DB');
 
     }
+    
     return result.deletedCount;
   }
 
@@ -254,7 +258,7 @@ class FlightActivityTracker {
     this.isPulling = true;
     this._alertsStatuses = {};
 
-    let systemState = await this.requestSystemState({ url: this._pullUrl, token: this._dedroneToken });
+    let systemState = await this.requestSystemState();
 
     if (systemState.error) {
       console.log(systemState.msg);
@@ -299,7 +303,7 @@ class FlightActivityTracker {
 
       if (!detectionType) {
         this.setAlertStatus(internalId, {
-          msg: 'device (remote/drone) not recognized'
+          msg: 'device not recognized'
         });
         console.log('device (remote/drone) has not been recognised yet');
         continue
@@ -414,38 +418,49 @@ class FlightActivityTracker {
     }
   }
 
-  runAutoClean = async () => {
-    this._deteleTask = cron.schedule(this._deleteFrequency, async () => {
-      console.log('delete task is running');
-      const { client } = await this.connectToMongo();
-      const outDatedAlerts = await this.getOutdatedDocuments({ client });
-
-      if (!outDatedAlerts.length) {
-        console.log('no document found for auto delete');
-        return;
-      }
-
-      let detectionIds = [];
-      const msgs = {
-        drone: [],
-        remote: [],
-      }
-
-      for (let alert of outDatedAlerts) {
-        detectionIds = detectionIds.concat(alert.detectionIds || [])
-        msgs[alert.detectionType] = msgs[alert.detectionType].concat(alert.messagesIds || []);
-      }
-
-      await this.deleteTelegramMessages({ detectionType: 'drone', msgs: msgs.drone });
-      await this.deleteTelegramMessages({ detectionType: 'remote', msgs: msgs.remote });
-
-      const query = {
-        detectionIds: {
-          $in: detectionIds
+  mergeAlertsHistory = async ({ client }) => {
+    try {
+      console.log('persisting data to the history collection');
+      const result = await client.db(this._dbName).collection(this._collectionName).aggregate([{
+        $merge: {
+          on: '_id',
+          into: this._alertHistoryCollection,
+          whenMatched: 'replace',
+          whenNotMatched: 'insert'
         }
-      }
+      }]);
 
-      await this.deleteMany({ client, query });
+      return result.toArray();
+    } catch (e) {
+      console.log('Failed to persist data to the history collection', e);
+    }
+  }
+
+  getAlertsHistory = async ({ client, stages = [] }) => {
+    const result = await client.db(this._dbName).collection(this._alertHistoryCollection).find({});
+
+    return result.toArray();
+  }
+
+  dropHistoryCollection = async ({ client }) => {
+    let result;
+
+    try {
+      console.log('deleting data form the main collection');
+      result = await client.db(this._dbName).collection(this._alertHistoryCollection).drop();
+    } catch (e) {
+      console.log('Failed to delete many documents from the DB');
+
+    }
+    
+    return result;
+  }
+
+  saveHistory = async () => {
+    this._deteleTask = cron.schedule(this._deleteFrequency, async () => {
+      const { client } = await this.connectToMongo();
+      await this.mergeAlertsHistory({ client });
+      await this.deleteMany({ client });
     });
   }
 }

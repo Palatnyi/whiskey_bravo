@@ -114,7 +114,7 @@ describe('dedron-pull.js', async () => {
     sinon.replace(flt, "requestSystemState", sinon.fake(() => systemState));
     flt.setCollectionName('alertsTest');
     const result = await flt.pullAlerts();
-    assert.equal(result['123'].msg, 'device (remote/drone) not recognized');
+    assert.equal(result['123'].msg, 'device not recognized');
 
   });
 
@@ -369,8 +369,7 @@ describe('dedron-pull.js', async () => {
     await flt.closeConnection();
   });
 
-  it('getOutdatedDocuments', async () => {
-
+  it('mergeAlertsHistory. Should transfer data to the history collection', async () => {
     const oneHour5min = (1000 * 60 * 60) + (1000 * 60 * 5);
     const timestamp1 = Date.now() - oneHour5min;
     const timestampWindow1 = timestamp1 + 180000;
@@ -435,21 +434,13 @@ describe('dedron-pull.js', async () => {
     await flt.updateCurrentAlert({ client, query: { detectionId: outdatedDoc2.detectionId }, doc: { $set: outdatedDoc2, $addToSet: { detectionIds: outdatedDoc2.detectionId } } });
     await flt.updateCurrentAlert({ client, query: { detectionId: validDoc.detectionId }, doc: { $set: validDoc, $addToSet: { detectionIds: validDoc.detectionId } } });
 
-    const result = await flt.getOutdatedDocuments({ client });
-
-    assert.equal(result.length, 2);
-    assert.equal(result[0].detectionId, 333);
-    assert.equal(result[1].detectionId, 123);
-
-    const detectionIds = result[0].detectionIds.concat(result[1].detectionId);
-
-    const deleteCount = await flt.deleteMany({ client, query: { detectionIds: { $in: detectionIds } } });
-
-    assert.equal(deleteCount, 2);
-
-    await flt.deleteMany({ client, query: {} });
-
-    await flt.closeConnection();
+    await flt.mergeAlertsHistory({ client });
+    
+    const result = await flt.getAlertsHistory({ client });
+    assert.equal(result.length, 3);
+    
+    const dropResult = await flt.dropHistoryCollection({ client });
+    assert.equal(dropResult, true);
 
   });
 });
